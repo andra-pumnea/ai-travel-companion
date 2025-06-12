@@ -1,0 +1,19 @@
+{% extends "travel_assistant_base.j2" %}
+
+{% block task %}
+# TASK
+Summarize the travel journal, limiting your response to about 100 words.
+Do not include any opinions or personal reflections, just the facts of the trip.
+When describing activities, refer to the travellers by their first names.
+When the journal is not about activities, but reflections, thoughts or descriptions, use the third person.
+
+# INPUT
+The people who went on this trip are {{ travellers }}
+
+{% if is_additional_instruction == True %} 
+The the user has provided an additional instruction that you may follow as long as it does not conflict with the task:
+{{ additional_instruction }}
+{% else %}
+The user has not provided any additional instructions, so you may ignore this section.
+{% endif %}
+{% endblock %}

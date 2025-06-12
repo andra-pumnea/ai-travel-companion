@@ -1,3 +1,5 @@
 groq
 pydantic
 pydantic-settings
+jinja2
+python-frontmatter
