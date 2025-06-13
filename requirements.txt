@@ -2,4 +2,10 @@ groq
 pydantic
 pydantic-settings
 jinja2
-python-frontmatter
+langchain-groq
+langchain-huggingface
+langchain-text-splitters 
+langchain-qdrant
+langchain-community 
+langgraph 
+sentence-transformers
