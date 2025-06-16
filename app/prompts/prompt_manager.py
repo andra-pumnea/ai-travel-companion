@@ -1,5 +1,5 @@
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateError, meta
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateError
 
 
 class PromptManager:

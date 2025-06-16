@@ -3,26 +3,27 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.prompts.prompt_manager import PromptManager
-from app.llm_manager import LLMManager
 from app.engine.indexing_pipeline import add_trip_to_vector_store
-
-
-def run_llm_manager(user_query: str, prompt: str = None, max_tokens: int = 400) -> str:
-    llm_manager = LLMManager()
-    response = llm_manager.generate_response(
-        user_query=user_query, prompt=prompt, max_tokens=max_tokens
-    )
-    return response
-
+from app.engine.retrieval_pipeline import run_retrieval_pipeline
 
 if __name__ == "__main__":
-    # user_query = (
-    #     "Make an itinerary for someone visiting Japan and Philippines in one week."
-    # )
-    # prompt = PromptManager.get_prompt("plan_trip")
-    # response = run_llm_manager(user_query, prompt)
-    # print(response)
+    print("📒 Travel Journal RAG Assistant (type 'exit' to quit)\n")
 
     _ = add_trip_to_vector_store()
     print("Trip added to vector store successfully.")
+
+    try:
+        while True:
+            question = input("\n❓ Ask a question: ").strip()
+            if question.lower() in {"exit", "quit"}:
+                print("👋 Goodbye!")
+                break
+            if question == "":
+                continue
+
+            response = run_retrieval_pipeline(
+                user_query=question, prompt_name="summarize_trip"
+            )
+            print(f"💬 Answer: {response}")
+    except KeyboardInterrupt:
+        print("\n👋 Exiting gracefully.")

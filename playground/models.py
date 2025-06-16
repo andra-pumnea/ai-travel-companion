@@ -58,8 +58,6 @@ if __name__ == "__main__":
     prompt = PromptManager.get_prompt(
         "summarize_trip",
         travellers="Andrada, Pablo",
-        is_additional_instruction=True,
-        additional_instruction=additional_instruction,
     )
     user_query = trip.all_steps[4].description
     response = call_llm(user_query, prompt, max_tokens=200)
