@@ -1,6 +1,6 @@
 from app.engine.vector_store import VectorStore
 from app.prompts.prompt_manager import PromptManager
-from app.llm_manager import LLMManager
+from app.engine.llm_manager import LLMManager
 
 
 def retrieve(user_query: str):
@@ -11,13 +11,15 @@ def retrieve(user_query: str):
     return {"context": retrieved_docs}
 
 
-def generate(user_query: str, prompt: str):
+def generate(user_query: str, prompt: str, chat_history: list):
     llm_manager = LLMManager()
-    response = llm_manager.generate_response(user_query=user_query, prompt=prompt)
+    response = llm_manager.generate_response(
+        user_query=user_query, prompt=prompt, chat_history=chat_history
+    )
     return response
 
 
-def run_retrieval_pipeline(user_query: str, prompt_name: str):
+def run_retrieval_pipeline(user_query: str, prompt_name: str, chat_history: list):
     """
     Runs the retrieval pipeline to get a response based on the user query and prompt.
 
@@ -30,5 +32,5 @@ def run_retrieval_pipeline(user_query: str, prompt_name: str):
     context = "\n\n".join(doc.page_content for doc in docs["context"]) if docs else ""
     chat_prompt = PromptManager.get_prompt(prompt_name, **{"context": context})
     print(f"Using prompt: \n {chat_prompt}")
-    response = generate(user_query, chat_prompt)
+    response = generate(user_query, chat_prompt, chat_history)
     return response

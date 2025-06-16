@@ -12,6 +12,8 @@ if __name__ == "__main__":
     _ = add_trip_to_vector_store()
     print("Trip added to vector store successfully.")
 
+    chat_history = []
+
     try:
         while True:
             question = input("\n❓ Ask a question: ").strip()
@@ -22,8 +24,14 @@ if __name__ == "__main__":
                 continue
 
             response = run_retrieval_pipeline(
-                user_query=question, prompt_name="summarize_trip"
+                user_query=question,
+                prompt_name="summarize_trip",
+                chat_history=chat_history,
             )
             print(f"💬 Answer: {response}")
+
+            chat_history.append(
+                {"role": "assistant", "content": response},
+            )
     except KeyboardInterrupt:
         print("\n👋 Exiting gracefully.")
