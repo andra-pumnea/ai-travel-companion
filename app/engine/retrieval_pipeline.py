@@ -1,6 +1,7 @@
 from app.engine.vector_store import VectorStore
 from app.prompts.prompt_manager import PromptManager
 from app.engine.llm_manager import LLMManager
+from app.prompts.question_answering import QAResponse
 
 
 def retrieve(user_query: str):
@@ -14,7 +15,10 @@ def retrieve(user_query: str):
 def generate(user_query: str, prompt: str, chat_history: list):
     llm_manager = LLMManager()
     response = llm_manager.generate_response(
-        user_query=user_query, prompt=prompt, chat_history=chat_history
+        user_query=user_query,
+        prompt=prompt,
+        chat_history=chat_history,
+        response_model=QAResponse,
     )
     return response
 

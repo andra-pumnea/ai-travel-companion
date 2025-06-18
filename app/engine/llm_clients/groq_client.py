@@ -1,7 +1,7 @@
 from groq import Groq
 
 from app.engine.llm_clients.base_llm_client import BaseLLMClient
-from app.config import GroqConfig
+from app.settings import GroqConfig
 
 
 class GroqClient(BaseLLMClient):
@@ -10,7 +10,6 @@ class GroqClient(BaseLLMClient):
     """
 
     def __init__(self):
-        self.client_name = "Groq"
         self.groq_config = GroqConfig()
 
     def init_client(self):

@@ -1,20 +1,17 @@
 import os
 import sys
+import json
+from typing import Type
+from pydantic import BaseModel
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from groq import Groq
-import json
-
-from app.config import LLMConfig, GroqConfig
 from app.data_models.trip import Trip
 from app.prompts.prompt_manager import PromptManager
+from app.prompts.question_answering import QAResponse
+from app.engine.llm_clients.llm_client_factory import LLMClientFactory
 
-llm_config = LLMConfig()
-groq_config = GroqConfig()
-client = Groq(
-    api_key=groq_config.groq_api_key,
-)
+client = LLMClientFactory(provider="groq")
 
 
 def read_trip_from_polarsteps() -> Trip:
@@ -24,25 +21,18 @@ def read_trip_from_polarsteps() -> Trip:
     return trip
 
 
-def call_llm(user_query: str, prompt, max_tokens: int = 400) -> str:
-    chat_completion = client.chat.completions.create(
+def call_llm(
+    user_query: str, prompt, response_model: Type[BaseModel], max_tokens: int = 400
+) -> str:
+    response = client.create_completion(
+        response_model=response_model,
         messages=[
-            {
-                "role": "system",
-                "content": prompt,
-            },
-            {
-                "role": "user",
-                "content": user_query,
-            },
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": user_query},
         ],
-        model=llm_config.model,
-        temperature=0.0,
         max_tokens=max_tokens,
     )
-
-    # Print the completion returned by the LLM.
-    return chat_completion.choices[0].message.content
+    return response
 
 
 if __name__ == "__main__":
@@ -54,11 +44,10 @@ if __name__ == "__main__":
     # print(response)
 
     trip = read_trip_from_polarsteps()
-    additional_instruction = "Summarize using only emojis."
     prompt = PromptManager.get_prompt(
-        "summarize_trip",
-        travellers="Andrada, Pablo",
+        "question_answering",
+        context=trip.all_steps[4].description,
     )
-    user_query = trip.all_steps[4].description
-    response = call_llm(user_query, prompt, max_tokens=200)
+    user_query = "where did I got in japan"
+    response = call_llm(user_query, prompt, response_model=QAResponse, max_tokens=200)
     print(response)

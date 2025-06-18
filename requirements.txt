@@ -9,3 +9,4 @@ langchain-qdrant
 langchain-community 
 langgraph 
 sentence-transformers
+instructor

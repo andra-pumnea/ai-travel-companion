@@ -25,13 +25,13 @@ if __name__ == "__main__":
 
             response = run_retrieval_pipeline(
                 user_query=question,
-                prompt_name="summarize_trip",
+                prompt_name="question_answering",
                 chat_history=chat_history,
             )
             print(f"💬 Answer: {response}")
 
             chat_history.append(
-                {"role": "assistant", "content": response},
+                {"role": "assistant", "content": response.answer},
             )
     except KeyboardInterrupt:
         print("\n👋 Exiting gracefully.")
