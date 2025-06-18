@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.data_models.trip import Trip
 from app.prompts.prompt_manager import PromptManager
-from app.prompts.question_answering import QAResponse
+from app.prompts.prompt_responses import QAResponse
 from app.engine.llm_clients.llm_client_factory import LLMClientFactory
 
 client = LLMClientFactory(provider="groq")

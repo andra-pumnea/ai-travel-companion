@@ -1,15 +1,26 @@
 import os
 import sys
+import logging
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.engine.indexing_pipeline import add_trip_to_vector_store
-from app.engine.retrieval_pipeline import run_retrieval_pipeline
+from app.engine.indexing_pipeline import IndexingPipeline
+from app.engine.retrieval_pipeline import RetrievalPipeline
+
+
+def setup_logging():
+    """Configure basic logging for the application."""
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
+
 
 if __name__ == "__main__":
+    setup_logging()
+
     print("📒 Travel Journal RAG Assistant (type 'exit' to quit)\n")
 
-    _ = add_trip_to_vector_store()
+    _ = IndexingPipeline.add_trip_to_vector_store()
     print("Trip added to vector store successfully.")
 
     chat_history = []
@@ -23,7 +34,7 @@ if __name__ == "__main__":
             if question == "":
                 continue
 
-            response = run_retrieval_pipeline(
+            response = RetrievalPipeline.run_retrieval_pipeline(
                 user_query=question,
                 prompt_name="question_answering",
                 chat_history=chat_history,

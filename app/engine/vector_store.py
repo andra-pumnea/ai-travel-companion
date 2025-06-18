@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 
 from langchain_qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, VectorParams
 
 
@@ -23,30 +23,48 @@ class VectorStore:
             cls._instance = super(VectorStore, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, collection_name: str):
+    def __init__(self):
         if self.__class__._initialized:
             return  # Prevent re-initializing
 
-        self.client = QdrantClient(":memory:")
+        self.qdrant_client = QdrantClient(":memory:")
 
         # Initialize the embeddings
         self.embeddings = Embeddings()
 
-        # Create the collection
-        self.client.create_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(
-                size=self.embeddings.embedding_size, distance=Distance.COSINE
-            ),
-        )
+        # Initialize vector store as None
+        self.qdrant_vector_store = None
 
-        # Initialize the vector store
-        self.vector_store = QdrantVectorStore(
-            client=self.client,
-            collection_name=collection_name,
-            embedding=self.embeddings.get_embedding_model(),
-        )
         self.__class__._initialized = True  # Mark as initialized
+
+    def get_vector_store(self) -> QdrantVectorStore:
+        """Get the Qdrant vector store."""
+        if self.qdrant_vector_store is None:
+            raise ValueError(
+                "Vector store not initialized. Call create_collection first."
+            )
+        return self.qdrant_vector_store
+
+    def create_collection(self, collection_name: str):
+        """
+        Create a new collection in the vector store.
+        """
+        try:
+            self.qdrant_client.create_collection(
+                collection_name=collection_name,
+                vectors_config=VectorParams(
+                    size=self.embeddings.embedding_size, distance=Distance.COSINE
+                ),
+            )
+            print(f"Collection '{collection_name}' created successfully.")
+            # Initialize the vector store
+            self.qdrant_vector_store = QdrantVectorStore(
+                client=self.qdrant_client,
+                collection_name=collection_name,
+                embedding=self.embeddings.get_embedding_model(),
+            )
+        except Exception as e:
+            print(f"Error creating collection: {e}")
 
     def add_documents(self, documents: list) -> list:
         """
@@ -54,12 +72,35 @@ class VectorStore:
 
         """
         try:
-            document_ids = self.vector_store.add_documents(documents=documents)
+            document_ids = self.qdrant_vector_store.add_documents(documents=documents)
         except Exception as e:
             print(f"Error adding documents to vector store: {e}")
             document_ids = []
         return document_ids
 
-    def get_vector_store(self) -> QdrantVectorStore:
-        """Get the Qdrant vector store."""
-        return self.vector_store
+    def similarity_search(self, query: str, metadata: dict, k: int = 5) -> list:
+        """
+        Perform a similarity search in the vector store.
+
+        :param query: The query string to search for.
+        :param k: The number of nearest neighbors to return.
+        :return: A list of documents that are similar to the query.
+        """
+        metadata_filter = None
+        if metadata["country_code"]:
+            metadata_filter = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="metadata.location.country_code",
+                        match=models.MatchValue(value=metadata["country_code"]),
+                    )
+                ]
+            )
+        try:
+            results = self.qdrant_vector_store.similarity_search(
+                query=query, k=k, filter=metadata_filter
+            )
+            return results
+        except Exception as e:
+            print(f"Error during similarity search, returning empty result: {e}")
+            return []

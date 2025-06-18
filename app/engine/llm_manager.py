@@ -29,6 +29,28 @@ class LLMManager:
             {"role": "user", "content": user_query},
         ]
         messages.extend(chat_history[:3])
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "extract_country_code",
+                    "description": "Extracts the 2-letter ISO 3166-1 alpha-2 country code from a user's query, if a country is mentioned.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "country_code": {
+                                "type": "string",
+                                "description": "The 2-letter ISO country code (e.g., 'JP' for Japan, 'US' for United States). If no country is mentioned, return null",
+                            }
+                        },
+                        "required": ["country_code"],
+                    },
+                },
+            }
+        ]
         return self.llm.create_completion(
-            response_model=response_model, messages=messages, max_tokens=max_tokens
+            response_model=response_model,
+            messages=messages,
+            tools=tools,
+            max_tokens=max_tokens,
         )

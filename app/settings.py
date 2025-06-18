@@ -1,16 +1,8 @@
 import os
-import logging
 from functools import lru_cache
 from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
-
-
-def setup_logging():
-    """Configure basic logging for the application."""
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
 
 
 class LLMSettings(BaseSettings):
@@ -35,5 +27,4 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Create and return a cached instance of the Settings."""
     settings = Settings()
-    setup_logging()
     return settings
