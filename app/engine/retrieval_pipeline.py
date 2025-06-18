@@ -17,7 +17,7 @@ class RetrievalPipeline:
     @staticmethod
     def retrieve(user_query: str, metadata: dict = None):
         retrieved_docs = RetrievalPipeline._vector_store.similarity_search(
-            query=user_query, metadata=metadata, k=5
+            query=user_query, metadata=metadata, k=10
         )
         logging.info(
             f"Retrieved {len(retrieved_docs)} documents for query: {user_query}"
@@ -41,7 +41,6 @@ class RetrievalPipeline:
 
         :param user_query: The query from the user.
         :param prompt_name: The name of the prompt to be used.
-        :param prompt_input: Optional input for the prompt.
         :return: The generated response from the LLM.
         """
         # Rewrite the user query if necessary
@@ -65,9 +64,10 @@ class RetrievalPipeline:
             user_query = rewrite_query_response.rewritten_user_query
 
         # Extract country code from the user query
+        country_extraction_prompt = PromptManager.get_prompt("country_extraction")
         country_code_response = RetrievalPipeline.generate(
             user_query,
-            "country_extraction",
+            country_extraction_prompt,
             chat_history=[],
             response_model=CountryExtractionResponse,
         )

@@ -1,8 +1,16 @@
 {% extends "travel_assistant_base.j2" %}
 
 {% block task %}
-Use the journal entries to answer the user's question. These entries were written during a trip and may include activities, locations, dates, and reflections.
-Be as factual and specific as possible. If the information needed is not in the journal, say "I couldn't find that in the entries." Do not guess or assume.
+Use the provided journal entries to answer the user's question about their trip.  
+These entries were written during the trip and may include details such as activities, locations, dates, meals, and personal reflections.  
+
+Answer as accurately and specifically as possible, based solely on the information in the entries.  
+If the journal entries do not contain the information needed, respond with: "I couldn't find that in the entries."  
+Avoid guessing or making assumptions beyond the provided content.
+
+When crafting your answer, keep the original pronouns and perspective from the user’s question.  
+For example, if the user asks about "John," respond using "he" or "John" as appropriate.  
+If the user asks about "my" experiences, respond using "you" or "your" accordingly, to make the answer natural and personalized.
 
 Journal entries:
 {{context}}
