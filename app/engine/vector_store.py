@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
@@ -56,7 +57,7 @@ class VectorStore:
                     size=self.embeddings.embedding_size, distance=Distance.COSINE
                 ),
             )
-            print(f"Collection '{collection_name}' created successfully.")
+            logging.info(f"Collection '{collection_name}' created successfully.")
             # Initialize the vector store
             self.qdrant_vector_store = QdrantVectorStore(
                 client=self.qdrant_client,
@@ -64,7 +65,7 @@ class VectorStore:
                 embedding=self.embeddings.get_embedding_model(),
             )
         except Exception as e:
-            print(f"Error creating collection: {e}")
+            logging.error(f"Error creating collection '{collection_name}': {e}")
 
     def add_documents(self, documents: list) -> list:
         """
@@ -74,7 +75,7 @@ class VectorStore:
         try:
             document_ids = self.qdrant_vector_store.add_documents(documents=documents)
         except Exception as e:
-            print(f"Error adding documents to vector store: {e}")
+            logging.error(f"Error adding documents to vector store: {e}")
             document_ids = []
         return document_ids
 
@@ -102,5 +103,5 @@ class VectorStore:
             )
             return results
         except Exception as e:
-            print(f"Error during similarity search, returning empty result: {e}")
+            logging.error(f"Error during similarity searc, returning empty result: {e}")
             return []

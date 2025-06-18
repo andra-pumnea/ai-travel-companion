@@ -21,7 +21,7 @@ if __name__ == "__main__":
     print("📒 Travel Journal RAG Assistant (type 'exit' to quit)\n")
 
     _ = IndexingPipeline.add_trip_to_vector_store()
-    print("Trip added to vector store successfully.")
+    logging.info("Trip data indexed successfully.")
 
     chat_history = []
 
@@ -39,7 +39,8 @@ if __name__ == "__main__":
                 prompt_name="question_answering",
                 chat_history=chat_history,
             )
-            print(f"💬 Answer: {response}")
+            print(f"💬 Answer: {response.answer}")
+            print(f"📄 Thought process: {response.thought_process}\n")
 
             chat_history.append(
                 {"role": "assistant", "content": response.answer},

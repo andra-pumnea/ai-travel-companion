@@ -1,3 +1,5 @@
+import logging
+
 from app.engine.vector_store import VectorStore
 from app.prompts.prompt_manager import PromptManager
 from app.engine.llm_manager import LLMManager
@@ -13,8 +15,9 @@ class RetrievalPipeline:
         retrieved_docs = RetrievalPipeline._vector_store.similarity_search(
             query=user_query, metadata=metadata, k=5
         )
-        print(f"Retrieved {len(retrieved_docs)} documents for query: {user_query}")
-        print(f"Retrieved documents: {retrieved_docs}")
+        logging.info(
+            f"Retrieved {len(retrieved_docs)} documents for query: {user_query}"
+        )
         return {"context": retrieved_docs}
 
     @staticmethod
@@ -44,7 +47,7 @@ class RetrievalPipeline:
             chat_history=[],
             response_model=CountryExtractionResponse,
         )
-        print(country_code_response)
+        logging.info(f"Extracted country code: {country_code_response.country_code}")
         metadata = {
             "country_code": country_code_response.country_code
             if country_code_response.country_code
@@ -59,7 +62,6 @@ class RetrievalPipeline:
 
         # Generate the response using the LLM with the retrieved context
         chat_prompt = PromptManager.get_prompt(prompt_name, **{"context": context})
-        print(f"Using prompt: \n {chat_prompt}")
         response = RetrievalPipeline.generate(
             user_query, chat_prompt, chat_history, response_model=QAResponse
         )
