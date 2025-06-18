@@ -3,7 +3,11 @@ import logging
 from app.engine.vector_store import VectorStore
 from app.prompts.prompt_manager import PromptManager
 from app.engine.llm_manager import LLMManager
-from app.prompts.prompt_responses import QAResponse, CountryExtractionResponse
+from app.prompts.prompt_responses import (
+    QAResponse,
+    CountryExtractionResponse,
+    RewriteQueryResponse,
+)
 
 
 class RetrievalPipeline:
@@ -40,6 +44,26 @@ class RetrievalPipeline:
         :param prompt_input: Optional input for the prompt.
         :return: The generated response from the LLM.
         """
+        # Rewrite the user query if necessary
+        if chat_history:
+            rewrite_prompt = PromptManager.get_prompt(
+                "rewrite_user_query",
+                **{
+                    "previous_answer": chat_history[-1]["content"],
+                    "followup_question": user_query,
+                },
+            )
+            rewrite_query_response = RetrievalPipeline.generate(
+                user_query,
+                rewrite_prompt,
+                chat_history=chat_history,
+                response_model=RewriteQueryResponse,
+            )
+            logging.info(
+                f"Rewritten user query: {rewrite_query_response.rewritten_user_query}"
+            )
+            user_query = rewrite_query_response.rewritten_user_query
+
         # Extract country code from the user query
         country_code_response = RetrievalPipeline.generate(
             user_query,

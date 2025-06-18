@@ -46,7 +46,24 @@ class LLMManager:
                         "required": ["country_code"],
                     },
                 },
-            }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "rewrite_query",
+                    "description": "Rewrite a follow-up question into a standalone query using conversation context.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "rewritten_user_query": {
+                                "type": "string",
+                                "description": "The rewritten standalone version of the user's follow-up query.",
+                            },
+                        },
+                        "required": ["rewritten_user_query"],
+                    },
+                },
+            },
         ]
         return self.llm.create_completion(
             response_model=response_model,

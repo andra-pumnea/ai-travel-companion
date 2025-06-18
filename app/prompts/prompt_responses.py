@@ -19,3 +19,12 @@ class CountryExtractionResponse(BaseModel):
     thought_process: List[str] = Field(
         description="List of thoughts that the AI assistant had while extracting the country code"
     )
+
+
+class RewriteQueryResponse(BaseModel):
+    thought_process: List[str] = Field(
+        description="List of thoughts that the AI assistant had while rewriting the query"
+    )
+    rewritten_user_query: str = Field(
+        description="The rewritten standalone version of the user's follow-up query."
+    )
