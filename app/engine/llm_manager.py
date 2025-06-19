@@ -1,17 +1,20 @@
-from app.engine.llm_clients.llm_client_factory import LLMClientFactory
 from typing import Type
 from pydantic import BaseModel
+
+from app.engine.memory.in_memory_history import InMemoryHistory
+from app.engine.llm_clients.llm_client_factory import LLMClientFactory
 
 
 class LLMManager:
     def __init__(self):
         self.llm = LLMClientFactory(provider="groq")
+        self.memory = InMemoryHistory()
 
     def generate_response(
         self,
         user_query: str,
-        prompt,
-        chat_history: list,
+        prompt: str,
+        conversation_id: str,
         response_model: Type[BaseModel],
         max_tokens: int = 400,
     ) -> str:
@@ -28,7 +31,7 @@ class LLMManager:
             {"role": "system", "content": prompt},
             {"role": "user", "content": user_query},
         ]
-        messages.extend(chat_history[:3])
+        # TODO: Add conversation history if available
         tools = [
             {
                 "type": "function",

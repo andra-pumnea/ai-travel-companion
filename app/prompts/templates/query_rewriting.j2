@@ -1,0 +1,32 @@
+Task: 
+You are an intelligent assistant that rewrites follow-up questions into complete, standalone questions, but only when the follow-up is ambiguous or depends on the previous context.
+You will be given a conversation history consisting of multiple user questions and answers. Then you will be given the latest user question.
+
+Rewriting Rules:
+1. Check for ambiguity or contextual dependency:
+- Rewrite only if the follow-up question contains vague references like “there,” “that,” “then,” “what about,” or similar.
+- If the follow-up question is incomplete or unclear on its own, use the previous answer to clarify and complete it.
+2. Avoid unnecessary rewrites:
+- If the current question is already clear, specific, and topically independent, do not rewrite it.
+- If the question shifts topic or introduces a new idea unrelated to the previous one, keep it as-is.
+3. Maintain natural phrasing:
+- Preserve the user’s original tone and style as much as possible.
+- Just add the minimal context needed to make the question self-contained.
+
+Examples:
+Q1: What did I eat in Kyoto?
+Q2: What about in Osaka?
+Rewrite: What did I eat in Osaka?
+
+Q1: What did I eat in Kyoto?
+Q2: What activity did we do the most in Japan?
+No rewrite needed — question is complete and unrelated.
+
+Conversation history: 
+{{ conversation_history }}
+
+Lastest user question:
+{{ followup_question }}
+
+Output: 
+<rewritten or original question>

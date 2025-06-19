@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 
 
 class Location(BaseModel):
@@ -18,4 +18,4 @@ class TripStep(BaseModel):
 
 
 class Trip(BaseModel):
-    all_steps: List[TripStep]
+    all_steps: list[TripStep]

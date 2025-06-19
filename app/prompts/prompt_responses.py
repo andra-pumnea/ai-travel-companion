@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
 class QAResponse(BaseModel):
-    thought_process: List[str] = Field(
+    thought_process: list[str] = Field(
         description="List of thoughts that the AI assistant had while synthesizing the answer"
     )
     answer: str = Field(description="The synthesized answer to the user's question")
@@ -16,13 +16,13 @@ class CountryExtractionResponse(BaseModel):
     country_code: Optional[str] = Field(
         description="The 2-letter ISO country code (e.g., 'JP' for Japan, 'US' for United States). If no country is mentioned, return null"
     )
-    thought_process: List[str] = Field(
+    thought_process: list[str] = Field(
         description="List of thoughts that the AI assistant had while extracting the country code"
     )
 
 
-class RewriteQueryResponse(BaseModel):
-    thought_process: List[str] = Field(
+class QueryRewritingResponse(BaseModel):
+    thought_process: list[str] = Field(
         description="List of thoughts that the AI assistant had while rewriting the query"
     )
     rewritten_user_query: str = Field(

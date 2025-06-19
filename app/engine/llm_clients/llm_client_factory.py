@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type
+from typing import Any, Type
 from pydantic import BaseModel
 import instructor
 
@@ -27,8 +27,8 @@ class LLMClientFactory:
     def create_completion(
         self,
         response_model: Type[BaseModel],
-        messages: List[Dict[str, str]],
-        tools: List[Dict],
+        messages: list[dict[str, str]],
+        tools: list[dict],
         **kwargs,
     ) -> Any:
         """
