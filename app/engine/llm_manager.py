@@ -1,14 +1,14 @@
 from typing import Type
 from pydantic import BaseModel
 
-from app.engine.memory.in_memory_history import InMemoryHistory
+from app.engine.memory.local_memory import LocalMemory
 from app.engine.llm_clients.llm_client_factory import LLMClientFactory
 
 
 class LLMManager:
     def __init__(self):
         self.llm = LLMClientFactory(provider="groq")
-        self.memory = InMemoryHistory()
+        self.memory = LocalMemory()
 
     def generate_response(
         self,

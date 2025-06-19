@@ -10,13 +10,13 @@ from app.prompts.prompt_responses import (
     CountryExtractionResponse,
     QueryRewritingResponse,
 )
-from app.engine.memory.in_memory_history import InMemoryHistory
+from app.engine.memory.local_memory import LocalMemory
 
 
 class RetrievalPipeline:
     _vector_store = VectorStore()
     _llm_manager = LLMManager()
-    _memory = InMemoryHistory()
+    _memory = LocalMemory()
 
     @staticmethod
     def retrieve(user_query: str, metadata: dict = None):

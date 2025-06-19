@@ -5,7 +5,7 @@ import logging
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.engine.memory.in_memory_history import InMemoryHistory
+from app.engine.memory.local_memory import LocalMemory
 from app.engine.indexing_pipeline import IndexingPipeline
 from app.engine.retrieval_pipeline import RetrievalPipeline
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     _ = IndexingPipeline.add_trip_to_vector_store()
     logging.info("Trip data indexed successfully.")
 
-    chat_history = InMemoryHistory()
+    chat_history = LocalMemory()
     conversation_id = uuid.uuid4().hex
 
     try:

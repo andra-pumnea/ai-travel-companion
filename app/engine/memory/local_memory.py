@@ -1,7 +1,7 @@
 from app.engine.memory.memory_base import BaseMemory
 
 
-class InMemoryHistory(BaseMemory):
+class LocalMemory(BaseMemory):
     """
     In-memory storage for managing memory data.
     """
@@ -11,7 +11,7 @@ class InMemoryHistory(BaseMemory):
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(InMemoryHistory, cls).__new__(cls)
+            cls._instance = super(LocalMemory, cls).__new__(cls)
         return cls._instance
 
     def __init__(self):
