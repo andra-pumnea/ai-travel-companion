@@ -3,7 +3,7 @@ from app.data_management.data_loader import (
     read_trip_from_polarsteps,
     convert_trip_to_documents,
 )
-from app.engine.vector_store import VectorStore
+from app.rag_engine.vector_store import VectorStore
 
 
 class IndexingPipeline:

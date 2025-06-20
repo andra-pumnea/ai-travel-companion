@@ -1,16 +1,11 @@
-import os
-import sys
 import logging
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
 
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, VectorParams
 
 
-from app.engine.embeddings import Embeddings
+from app.rag_engine.embeddings import Embeddings
 
 
 class VectorStore:

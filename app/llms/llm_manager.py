@@ -1,8 +1,8 @@
 from typing import Type
 from pydantic import BaseModel
 
-from app.engine.memory.local_memory import LocalMemory
-from app.engine.llm_clients.llm_client_manager import LLMClientManager
+from app.rag_engine.memory.local_memory import LocalMemory
+from app.llms.llm_clients.llm_client_manager import LLMClientManager
 
 
 class LLMManager:

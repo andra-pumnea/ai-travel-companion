@@ -1,6 +1,6 @@
 from groq import Groq
 
-from app.engine.llm_clients.base_llm_client import BaseLLMClient
+from app.llms.llm_clients.base_llm_client import BaseLLMClient
 from app.settings import GroqConfig
 
 

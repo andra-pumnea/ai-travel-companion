@@ -1,9 +1,9 @@
 import logging
 from typing import Any
 
-from app.engine.vector_store import VectorStore
-from app.engine.llm_manager import LLMManager
-from app.engine.memory.local_memory import LocalMemory
+from app.rag_engine.vector_store import VectorStore
+from app.llms.llm_manager import LLMManager
+from app.rag_engine.memory.local_memory import LocalMemory
 from app.prompts.query_rewriting import QueryRewriting
 from app.prompts.question_answering import QuestionAnswering
 

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import instructor
 
 from app.settings import get_settings
-from app.engine.llm_clients.groq_client import GroqClient
+from app.llms.llm_clients.groq_client import GroqClient
 
 
 class LLMClientManager:
@@ -28,7 +28,7 @@ class LLMClientManager:
         self,
         response_model: Type[BaseModel],
         messages: list[dict[str, str]],
-        tools: list[dict],
+        tools: list[dict] = None,
         **kwargs,
     ) -> Any:
         """
@@ -45,7 +45,7 @@ class LLMClientManager:
             "max_tokens": kwargs.get("max_tokens", self.settings.max_tokens),
             "response_model": response_model,
             "messages": messages,
-            "tools": tools,
+            "tools": tools if tools else None,
             "tool_choice": kwargs.get("tool_choice", "auto"),
         }
         return self.client.chat.completions.create(**completion_params)
