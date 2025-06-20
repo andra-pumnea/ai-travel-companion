@@ -2,12 +2,12 @@ from typing import Type
 from pydantic import BaseModel
 
 from app.engine.memory.local_memory import LocalMemory
-from app.engine.llm_clients.llm_client_factory import LLMClientFactory
+from app.engine.llm_clients.llm_client_manager import LLMClientManager
 
 
 class LLMManager:
     def __init__(self):
-        self.llm = LLMClientFactory(provider="groq")
+        self.llm = LLMClientManager(provider="groq")
         self.memory = LocalMemory()
 
     def generate_response(
@@ -32,45 +32,8 @@ class LLMManager:
             {"role": "user", "content": user_query},
         ]
         # TODO: Add conversation history if available
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "extract_country_code",
-                    "description": "Extracts the 2-letter ISO 3166-1 alpha-2 country code from a user's query, if a country is mentioned.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "country_code": {
-                                "type": "string",
-                                "description": "The 2-letter ISO country code (e.g., 'JP' for Japan, 'US' for United States). If no country is mentioned, return null",
-                            }
-                        },
-                        "required": ["country_code"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "rewrite_query",
-                    "description": "Rewrite a follow-up question into a standalone query using conversation context.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "rewritten_user_query": {
-                                "type": "string",
-                                "description": "The rewritten standalone version of the user's follow-up query.",
-                            },
-                        },
-                        "required": ["rewritten_user_query"],
-                    },
-                },
-            },
-        ]
         return self.llm.create_completion(
             response_model=response_model,
             messages=messages,
-            tools=tools,
             max_tokens=max_tokens,
         )

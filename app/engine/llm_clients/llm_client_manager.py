@@ -6,7 +6,7 @@ from app.settings import get_settings
 from app.engine.llm_clients.groq_client import GroqClient
 
 
-class LLMClientFactory:
+class LLMClientManager:
     def __init__(self, provider: str):
         self.provider = provider
         self.settings = getattr(get_settings(), provider)

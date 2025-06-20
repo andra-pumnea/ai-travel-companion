@@ -15,10 +15,13 @@ class RetrievalPipeline:
         self.memory = LocalMemory()
 
     @staticmethod
-    def _log_token_usage(prompt_name: str, prompt: str):
+    def _log_token_usage(prompt_name: str, prompt: str) -> None:
+        """Logs the token usage for a given prompt.
+        :param prompt_name: The name of the prompt.
+        :param prompt: The rendered prompt string."""
         logging.info(f"Prompt {prompt_name} token usage: {len(prompt)}")
 
-    def _search_journal_entries(self, user_query: str, metadata: dict = None):
+    def _search_journal_entries(self, user_query: str, metadata: dict = None) -> dict:
         """
         Retrieves relevant documents from the vector store based on the user query.
         :param user_query: The query from the user.
