@@ -26,6 +26,7 @@ if __name__ == "__main__":
     logging.info("Trip data indexed successfully.")
 
     chat_history = LocalMemory()
+    retrieval_pipeline = RetrievalPipeline()
     conversation_id = uuid.uuid4().hex
 
     try:
@@ -37,9 +38,8 @@ if __name__ == "__main__":
             if question == "":
                 continue
 
-            response = RetrievalPipeline.run_retrieval_pipeline(
+            response = retrieval_pipeline.run(
                 user_query=question,
-                prompt_name="question_answering",
                 conversation_id=conversation_id,
             )
             print(f"💬 Answer: {response.answer}")

@@ -1,26 +1,30 @@
 import logging
-from typing import Type
-from pydantic import BaseModel
+from typing import Any
 
 from app.engine.vector_store import VectorStore
-from app.prompts.prompt_manager import PromptManager
 from app.engine.llm_manager import LLMManager
-from app.prompts.prompt_responses import (
-    QAResponse,
-    CountryExtractionResponse,
-    QueryRewritingResponse,
-)
 from app.engine.memory.local_memory import LocalMemory
+from app.prompts.query_rewriting import QueryRewriting
+from app.prompts.question_answering import QuestionAnswering
 
 
 class RetrievalPipeline:
-    _vector_store = VectorStore()
-    _llm_manager = LLMManager()
-    _memory = LocalMemory()
+    def __init__(self):
+        self.vector_store = VectorStore()
+        self.llm_manager = LLMManager()
+        self.memory = LocalMemory()
 
     @staticmethod
-    def retrieve(user_query: str, metadata: dict = None):
-        retrieved_docs = RetrievalPipeline._vector_store.similarity_search(
+    def _log_token_usage(prompt_name: str, prompt: str):
+        logging.info(f"Prompt {prompt_name} token usage: {len(prompt)}")
+
+    def _search_journal_entries(self, user_query: str, metadata: dict = None):
+        """
+        Retrieves relevant documents from the vector store based on the user query.
+        :param user_query: The query from the user.
+        :param metadata: Optional metadata to filter the search.
+        :return: A list of retrieved documents."""
+        retrieved_docs = self.vector_store.similarity_search(
             query=user_query, metadata=metadata, k=10
         )
         logging.info(
@@ -28,23 +32,60 @@ class RetrievalPipeline:
         )
         return {"context": retrieved_docs}
 
-    @staticmethod
-    def generate(
-        user_query: str,
-        prompt: str,
-        conversation_id: str,
-        response_model: Type[BaseModel],
-    ):
-        response = RetrievalPipeline._llm_manager.generate_response(
+    def _rewrite_query(self, user_query: str, conversation_id: str) -> str:
+        """
+        Rewrites the user query based on the conversation history.
+        :param user_query: The original user query.
+        :param conversation_id: The ID of the conversation.
+        :return: The rewritten user query.
+        """
+        memory_data = self.memory.get_data(conversation_id)
+        if memory_data:
+            rendered_prompt = QueryRewriting.format(
+                conversation_history=memory_data[-5:],
+                followup_question=user_query,
+            )
+            RetrievalPipeline._log_token_usage(
+                prompt_name=QueryRewriting.prompt_name, prompt=rendered_prompt
+            )
+
+            rewrite_query_response = self.llm_manager.generate_response(
+                user_query=user_query,
+                prompt=rendered_prompt,
+                conversation_id=conversation_id,
+                response_model=QueryRewriting.response_model(),
+            )
+            logging.info(
+                f"Rewritten user query: {rewrite_query_response.rewritten_user_query}"
+            )
+            return rewrite_query_response.rewritten_user_query
+        return user_query
+
+    def _generate_answer(
+        self, user_query: str, context: str, conversation_id: str
+    ) -> Any:
+        """
+        Generates an answer based on the user query and context.
+        :param user_query: The original user query.
+        :param context: The context retrieved from the vector store.
+        :param conversation_id: The ID of the conversation.
+        :return: The generated answer.
+        """
+        rendered_prompt = QuestionAnswering.format(context=context)
+
+        RetrievalPipeline._log_token_usage(
+            prompt_name=QuestionAnswering.prompt_name, prompt=rendered_prompt
+        )
+
+        response = self.llm_manager.generate_response(
             user_query=user_query,
-            prompt=prompt,
+            prompt=rendered_prompt,
             conversation_id=conversation_id,
-            response_model=response_model,
+            response_model=QuestionAnswering.response_model(),
         )
         return response
 
-    @staticmethod
-    def run_retrieval_pipeline(user_query: str, prompt_name: str, conversation_id: str):
+    def run(self, user_query: str, conversation_id: str):
         """
         Runs the retrieval pipeline to get a response based on the user query and prompt.
 
@@ -53,51 +94,18 @@ class RetrievalPipeline:
         :return: The generated response from the LLM.
         """
         # Rewrite the user query if necessary
-        if RetrievalPipeline._memory.get_data(conversation_id):
-            rewrite_prompt = PromptManager.get_prompt(
-                "query_rewriting",
-                **{
-                    "conversation_history": RetrievalPipeline._memory.get_data(
-                        conversation_id
-                    )[-5:],
-                    "followup_question": user_query,
-                },
-            )
-            rewrite_query_response = RetrievalPipeline.generate(
-                user_query,
-                rewrite_prompt,
-                conversation_id,
-                response_model=QueryRewritingResponse,
-            )
-            logging.info(
-                f"Rewritten user query: {rewrite_query_response.rewritten_user_query}"
-            )
-            user_query = rewrite_query_response.rewritten_user_query
-
-        # Extract country code from the user query
-        country_extraction_prompt = PromptManager.get_prompt("country_extraction")
-        country_code_response = RetrievalPipeline.generate(
-            user_query,
-            country_extraction_prompt,
-            conversation_id,
-            response_model=CountryExtractionResponse,
-        )
-        logging.info(f"Extracted country code: {country_code_response.country_code}")
-        metadata = {
-            "country_code": country_code_response.country_code
-            if country_code_response.country_code
-            else ""
-        }
+        user_query = self._rewrite_query(user_query, conversation_id)
 
         # Retrieve documents from the vector store based on the user query and metadata
-        docs = RetrievalPipeline.retrieve(user_query, metadata=metadata)
+        docs = self._search_journal_entries(user_query)
         context = (
             "\n\n".join(doc.page_content for doc in docs["context"]) if docs else ""
         )
 
         # Generate the response using the LLM with the retrieved context
-        chat_prompt = PromptManager.get_prompt(prompt_name, **{"context": context})
-        response = RetrievalPipeline.generate(
-            user_query, chat_prompt, conversation_id, response_model=QAResponse
+        response = self._generate_answer(
+            user_query=user_query,
+            context=context,
+            conversation_id=conversation_id,
         )
         return response

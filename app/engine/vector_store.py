@@ -79,7 +79,7 @@ class VectorStore:
             document_ids = []
         return document_ids
 
-    def similarity_search(self, query: str, metadata: dict, k: int = 5) -> list:
+    def similarity_search(self, query: str, metadata: dict = None, k: int = 5) -> list:
         """
         Perform a similarity search in the vector store.
 
@@ -88,12 +88,12 @@ class VectorStore:
         :return: A list of documents that are similar to the query.
         """
         metadata_filter = None
-        if metadata["country_code"]:
+        if metadata:
             metadata_filter = models.Filter(
                 must=[
                     models.FieldCondition(
                         key="metadata.location.country_code",
-                        match=models.MatchValue(value=metadata["country_code"]),
+                        match=models.MatchValue(value=metadata.get("country_code", "")),
                     )
                 ]
             )
