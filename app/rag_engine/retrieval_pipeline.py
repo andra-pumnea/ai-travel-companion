@@ -52,7 +52,7 @@ class RetrievalPipeline:
                 prompt_name=QueryRewriting.prompt_name, prompt=rendered_prompt
             )
 
-            rewrite_query_response = self.llm_manager.generate_response(
+            rewrite_query_response = self.llm_manager.call_llm_with_retry(
                 user_query=user_query,
                 prompt=rendered_prompt,
                 conversation_id=conversation_id,
@@ -80,7 +80,7 @@ class RetrievalPipeline:
             prompt_name=QuestionAnswering.prompt_name, prompt=rendered_prompt
         )
 
-        response = self.llm_manager.generate_response(
+        response = self.llm_manager.call_llm_with_retry(
             user_query=user_query,
             prompt=rendered_prompt,
             conversation_id=conversation_id,

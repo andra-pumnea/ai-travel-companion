@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Type
 from pydantic import BaseModel
 import instructor
@@ -38,14 +39,20 @@ class LLMClientManager:
         :param kwargs: Additional parameters for the completion request.
         :return: The response from the LLM.
         """
-        completion_params = {
-            "model": kwargs.get("model", self.settings.model),
-            "temperature": kwargs.get("temperature", self.settings.temperature),
-            "max_retries": kwargs.get("max_retries", self.settings.max_retries),
-            "max_tokens": kwargs.get("max_tokens", self.settings.max_tokens),
-            "response_model": response_model,
-            "messages": messages,
-            "tools": tools if tools else None,
-            "tool_choice": kwargs.get("tool_choice", "auto"),
-        }
-        return self.client.chat.completions.create(**completion_params)
+        try:
+            completion_params = {
+                "model": kwargs["model"],
+                "temperature": kwargs.get("temperature", self.settings.temperature),
+                "max_retries": kwargs.get("max_retries", self.settings.max_retries),
+                "max_tokens": kwargs.get("max_tokens", self.settings.max_tokens),
+                "response_model": response_model,
+                "messages": messages,
+                "tools": tools if tools else None,
+                "tool_choice": kwargs.get("tool_choice", "auto"),
+            }
+            return self.client.chat.completions.create(**completion_params)
+        except Exception as e:
+            logging.error(
+                f"Error creating completion: {e} with provider {self.provider}"
+            )
+            raise e

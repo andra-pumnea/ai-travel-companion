@@ -38,10 +38,18 @@ if __name__ == "__main__":
             if question == "":
                 continue
 
-            response = retrieval_pipeline.run(
-                user_query=question,
-                conversation_id=conversation_id,
-            )
+            try:
+                response = retrieval_pipeline.run(
+                    user_query=question,
+                    conversation_id=conversation_id,
+                )
+            except Exception as e:
+                logging.error(f"Error during retrieval: {e}")
+                print(
+                    "⚠️ An error occurred while processing your request. Please try again."
+                )
+                continue
+
             print(f"💬 Answer: {response.answer}")
             print(f"📄 Thought process: {response.thought_process}\n")
 
