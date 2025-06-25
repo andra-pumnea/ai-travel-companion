@@ -1,4 +1,4 @@
-from app.rag_engine.memory.memory_base import BaseMemory
+from app.memory.memory_base import BaseMemory
 
 
 class LocalMemory(BaseMemory):

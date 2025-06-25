@@ -11,7 +11,10 @@ from app.data_models.trip import Trip, TripStep
 
 
 def read_trip_from_polarsteps() -> Trip:
-    with open(os.path.expanduser("~/ai-travel-companion/data/trip.json"), "r") as f:
+    with open(
+        os.path.expanduser("~/ai-travel-companion/app/data_management/data/trip.json"),
+        "r",
+    ) as f:
         data = json.load(f)
     trip = Trip(**data)
     return trip

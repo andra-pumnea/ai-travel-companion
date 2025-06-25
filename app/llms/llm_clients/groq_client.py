@@ -4,7 +4,7 @@ import instructor
 from pydantic import BaseModel
 from groq import Groq
 
-from app.llms.llm_clients.base_llm_client import BaseLLMClient
+from app.llms.llm_clients.llm_client_base import BaseLLMClient
 from app.settings import GroqConfig
 
 
@@ -14,6 +14,7 @@ class GroqClient(BaseLLMClient):
     """
 
     def __init__(self):
+        # TODO: Make singleton
         self._settings = GroqConfig()
         self._client = instructor.from_groq(Groq(api_key=self._settings.groq_api_key))
 
@@ -44,9 +45,7 @@ class GroqClient(BaseLLMClient):
             }
             return self.client.chat.completions.create(**completion_params)
         except Exception as e:
-            logging.error(
-                f"Error creating completion: {e} with provider {self.provider}"
-            )
+            logging.error(f"Error creating completion: {e}.")
             raise e
 
     @property

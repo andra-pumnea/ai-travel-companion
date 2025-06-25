@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Type
 from pydantic import BaseModel
@@ -12,6 +13,7 @@ class PromptBase(ABC):
     """
 
     _env = None
+    prompt_name: str = "base_prompt"
 
     @classmethod
     def _get_env(cls, templates_dir="prompts/templates") -> Environment:
@@ -47,6 +49,13 @@ class PromptBase(ABC):
             return template.render(**kwargs)
         except TemplateError as e:
             raise ValueError(f"Error rendering template '{template_path}': {e}")
+
+    @classmethod
+    def _log_token_usage(cls, prompt: str) -> None:
+        """Logs the token usage for a given prompt.
+        :param prompt_name: The name of the prompt.
+        :param prompt: The rendered prompt string."""
+        logging.info(f"Prompt {cls.prompt_name} token usage: {len(prompt)}")
 
     @classmethod
     @abstractmethod

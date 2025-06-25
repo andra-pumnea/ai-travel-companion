@@ -3,7 +3,7 @@ from typing import Any
 
 from app.rag_engine.vector_store import VectorStore
 from app.llms.llm_manager import LLMManager
-from app.rag_engine.memory.local_memory import LocalMemory
+from app.memory.local_memory import LocalMemory
 from app.prompts.query_rewriting import QueryRewriting
 from app.prompts.question_answering import QuestionAnswering
 
@@ -21,7 +21,7 @@ class RetrievalPipeline:
         :param prompt: The rendered prompt string."""
         logging.info(f"Prompt {prompt_name} token usage: {len(prompt)}")
 
-    def _search_journal_entries(self, user_query: str, metadata: dict = None) -> dict:
+    def search_journal_entries(self, user_query: str, metadata: dict = None) -> dict:
         """
         Retrieves relevant documents from the vector store based on the user query.
         :param user_query: The query from the user.
@@ -100,7 +100,7 @@ class RetrievalPipeline:
         user_query = self._rewrite_query(user_query, conversation_id)
 
         # Retrieve documents from the vector store based on the user query and metadata
-        docs = self._search_journal_entries(user_query)
+        docs = self.search_journal_entries(user_query)
         context = (
             "\n\n".join(doc.page_content for doc in docs["context"]) if docs else ""
         )

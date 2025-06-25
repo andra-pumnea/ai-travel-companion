@@ -4,22 +4,21 @@ import logging
 from typing import Type
 from pydantic import BaseModel
 
-from app.rag_engine.memory.local_memory import LocalMemory
 from app.llms.llm_clients.llm_router import LLMRouter
 
 
 class LLMManager:
     def __init__(self):
         self.llm, self.settings = LLMRouter.get_client("groq")
-        self.memory = LocalMemory()
 
     def generate_response(
         self,
         model: str,
         user_query: str,
         prompt: str,
-        conversation_id: str,
         response_model: Type[BaseModel],
+        tools: list[dict] = None,
+        conversation_id: str = None,
         max_tokens: int = 400,
     ) -> str:
         """
@@ -39,6 +38,7 @@ class LLMManager:
         return self.llm.generate(
             response_model=response_model,
             messages=messages,
+            tools=tools,
             max_tokens=max_tokens,
             model=model,
         )

@@ -5,9 +5,10 @@ import logging
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.rag_engine.memory.local_memory import LocalMemory
+from app.memory.local_memory import LocalMemory
 from app.rag_engine.indexing_pipeline import IndexingPipeline
 from app.rag_engine.retrieval_pipeline import RetrievalPipeline
+from app.planner_agent import PlannerAgent
 
 
 def setup_logging():
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     logging.info("Trip data indexed successfully.")
 
     chat_history = LocalMemory()
-    retrieval_pipeline = RetrievalPipeline()
+    planner_agent = PlannerAgent()
     conversation_id = uuid.uuid4().hex
 
     try:
@@ -39,10 +40,7 @@ if __name__ == "__main__":
                 continue
 
             try:
-                response = retrieval_pipeline.run(
-                    user_query=question,
-                    conversation_id=conversation_id,
-                )
+                response = planner_agent.run(user_query=question)
             except Exception as e:
                 logging.error(f"Error during retrieval: {e}")
                 print(
@@ -50,10 +48,12 @@ if __name__ == "__main__":
                 )
                 continue
 
-            print(f"💬 Answer: {response.answer}")
-            print(f"📄 Thought process: {response.thought_process}\n")
+            if response.final_answer is None:
+                print("❓ No answer found. Please try a different question.")
+                continue
+            print(f"💬 Answer: {response.final_answer}")
 
             chat_history.add_data(conversation_id, f"Question: {question}")
-            chat_history.add_data(conversation_id, f"Answer: {response.answer}")
+            chat_history.add_data(conversation_id, f"Answer: {response.final_answer}")
     except KeyboardInterrupt:
         print("\n👋 Exiting gracefully.")

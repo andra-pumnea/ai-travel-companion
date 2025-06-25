@@ -22,12 +22,13 @@ class QuestionAnswering(PromptBase):
     prompt_name = "question_answering"
 
     @classmethod
-    def format(self, context: str) -> str:
+    def format(cls, context: str) -> str:
         """
         Formats the prompt with the given context.
         :param context: The context to include in the prompt.
-        :return: The formatted prompt string."""
-        return self.build_prompt(self.prompt_name, context=context)
+        :return: The formatted prompt string.
+        """
+        return cls.build_prompt(cls.prompt_name, context=context)
 
     @classmethod
     def response_model(cls) -> Type[BaseModel]:
