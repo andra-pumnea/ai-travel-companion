@@ -28,7 +28,7 @@ class RetrievalPipeline:
         :param metadata: Optional metadata to filter the search.
         :return: A list of retrieved documents."""
         retrieved_docs = self.vector_store.similarity_search(
-            query=user_query, metadata=metadata, k=10
+            query=user_query, metadata=metadata, k=5
         )
         logging.info(
             f"Retrieved {len(retrieved_docs)} documents for query: {user_query}"

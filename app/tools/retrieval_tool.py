@@ -10,7 +10,7 @@ class RetrievalTool(ToolBase):
     def __init__(
         self,
         name: str = "retrieval_tool",
-        description: str = "Retrieve information from user's past travel journal to see what they did in the past.",
+        description: str = "The retrieval tool is a semantic similarity tool to learn only from the user's past experiences, not future plans. Call once per unique location and unique input.",
     ):
         super().__init__(name, description)
         self.retrieval_pipeline = RetrievalPipeline()

@@ -20,11 +20,6 @@ class ToolManager:
         return self._tools.get(tool_name)
 
     @property
-    def tool_names(self):
-        """List all registered tools."""
-        return list(self._tools.keys())
-
-    @property
     def tool_descriptions(self):
         """List all registered tool descriptions."""
         return self._tool_descriptions
@@ -33,6 +28,6 @@ class ToolManager:
     def tools(self):
         """List all registered tools with their descriptions."""
         return [
-            {"name": name, "description": tool.description}
+            {"name": name, "function_definition": tool.tool_info}
             for name, tool in self._tools.items()
         ]

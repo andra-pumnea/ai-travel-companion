@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.memory.local_memory import LocalMemory
 from app.rag_engine.indexing_pipeline import IndexingPipeline
-from app.rag_engine.retrieval_pipeline import RetrievalPipeline
+
 from app.planner_agent import PlannerAgent
 
 
@@ -48,9 +48,6 @@ if __name__ == "__main__":
                 )
                 continue
 
-            if response.final_answer is None:
-                print("❓ No answer found. Please try a different question.")
-                continue
             print(f"💬 Answer: {response.final_answer}")
 
             chat_history.add_data(conversation_id, f"Question: {question}")

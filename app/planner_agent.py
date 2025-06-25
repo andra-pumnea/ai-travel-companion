@@ -20,15 +20,17 @@ class PlannerAgent:
         """
         logging.info(f"Running planner agent with user query: {user_query}")
 
-        for step in range(max_steps):
-            tool_info = self._prepare_tools()
-            logging.info(f"Available tools: {tool_info}")
+        tool_info = self._prepare_tools()
+        logging.info(f"Available tools: {tool_info}")
 
+        for step in range(max_steps):
             context = "\n".join(self.steps_so_far)
-            logging.info(f"Current context: {context}")
 
             rendered_prompt = TravelAgentPrompt.format(
-                user_query=user_query, tool_info=tool_info, context=context
+                user_query=user_query,
+                tool_info=tool_info,
+                context=context,
+                current_step=step,
             )
 
             response = self.llm_manager.call_llm_with_retry(
@@ -40,15 +42,16 @@ class PlannerAgent:
 
             if response.final_answer:
                 logging.info(
-                    f"Final answer received from the planner agent. Thought process: {response.thought}"
+                    f"Final answer received from the planner agent. Thought process: {response.thought_process}"
                 )
-                return response.final_answer
+                return response
 
             try:
                 action = response.action
                 action_input = response.action_input
+                thought_process = response.thought_process
                 logging.info(
-                    f"Step {step + 1}: Thought: {response.thought}, Action: {action}, Action Input: {action_input}"
+                    f"Step {step + 1}: Thought: {response.thought_process}, Action: {action}, Action Input: {action_input}"
                 )
 
                 if action and action_input:
@@ -56,10 +59,10 @@ class PlannerAgent:
                         action_input
                     )
                     self.steps_so_far.append(
-                        f"Step {step + 1}/{max_steps}: Tool: {action}, Input: {action_input}, Response: {tool_response} \n"
+                        f"Step {step + 1}/{max_steps}: Tool: {action}, Input: {action_input}, Response: {tool_response}, Thought Process: {thought_process} \n"
                     )
                 else:
-                    logging.info("No further actions required. Ending planning.")
+                    logging.info("No action or action_input generated.")
                     break
             except Exception as e:
                 logging.error(f"Error during planning step {step + 1}: {e}")
@@ -67,7 +70,10 @@ class PlannerAgent:
                     f"Step {step + 1}/{max_steps}: Error: {str(e)}"
                 )
 
-        return "Sorry, I couldn't complete the plan in time."
+        return TravelAgentPrompt.response_model()(
+            final_answer="Sorry, I couldn't generate a complete plan. Please try again.",
+            thought_process="The planner agent was unable to complete the task within the maximum steps allowed.",
+        )
 
     def _prepare_tools(self) -> list[str]:
         """
@@ -75,11 +81,11 @@ class PlannerAgent:
         :return: A list of tool descriptions.
         """
         logging.info("Preparing tools for the planner agent.")
-        self.tools_manager.register_tool("retrieval_tool", RetrievalTool())
+        # self.tools_manager.register_tool("retrieval_tool", RetrievalTool())
         self.tools_manager.register_tool("weather_tool", WeatherTool())
         self.tools_manager.register_tool("memory_tool", MemoryTool())
 
         all_tools = []
         for tool in self.tools_manager.tools:
-            all_tools.append(f"{tool['name']}: {tool['description']}")
+            all_tools.append(f"{tool['name']}: {tool['function_definition']}")
         return all_tools
