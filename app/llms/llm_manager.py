@@ -5,12 +5,12 @@ from typing import Type
 from pydantic import BaseModel
 
 from app.rag_engine.memory.local_memory import LocalMemory
-from app.llms.llm_clients.llm_client_manager import LLMClientManager
+from app.llms.llm_clients.llm_router import LLMRouter
 
 
 class LLMManager:
     def __init__(self):
-        self.llm = LLMClientManager(provider="groq")
+        self.llm, self.settings = LLMRouter.get_client("groq")
         self.memory = LocalMemory()
 
     def generate_response(
@@ -36,7 +36,7 @@ class LLMManager:
             {"role": "user", "content": user_query},
         ]
         # TODO: Add conversation history if available
-        return self.llm.create_completion(
+        return self.llm.generate(
             response_model=response_model,
             messages=messages,
             max_tokens=max_tokens,
@@ -52,7 +52,7 @@ class LLMManager:
         :param kwargs: Additional parameters for the LLM call.
         :return: The response from the LLM.
         """
-        for model in self.llm.settings.model:
+        for model in self.settings.model:
             logging.info(f"Attempting to call model: {model}")
             for attempt in range(max_retries):
                 try:
