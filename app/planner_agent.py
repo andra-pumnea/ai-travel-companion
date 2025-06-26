@@ -28,7 +28,6 @@ class PlannerAgent:
 
             rendered_prompt = TravelAgentPrompt.format(
                 user_query=user_query,
-                tool_info=tool_info,
                 context=context,
                 current_step=step,
             )
@@ -38,17 +37,18 @@ class PlannerAgent:
                 prompt=rendered_prompt,
                 response_model=TravelAgentPrompt.response_model(),
                 tools=self.tools_manager.tool_descriptions,
+                max_tokens=1000,
             )
 
-            if response.final_answer:
+            if response.travel_plan:
                 logging.info(
                     f"Final answer received from the planner agent. Thought process: {response.thought_process}"
                 )
                 return response
 
             try:
-                action = response.action
-                action_input = response.action_input
+                action = response.tool
+                action_input = response.tool_input
                 thought_process = response.thought_process
                 logging.info(
                     f"Step {step + 1}: Thought: {response.thought_process}, Action: {action}, Action Input: {action_input}"
@@ -62,8 +62,8 @@ class PlannerAgent:
                         f"Step {step + 1}/{max_steps}: Tool: {action}, Input: {action_input}, Response: {tool_response}, Thought Process: {thought_process} \n"
                     )
                 else:
-                    logging.info("No action or action_input generated.")
-                    break
+                    logging.info("No tool or tool_input generated.")
+                    continue
             except Exception as e:
                 logging.error(f"Error during planning step {step + 1}: {e}")
                 self.steps_so_far.append(
@@ -71,7 +71,7 @@ class PlannerAgent:
                 )
 
         return TravelAgentPrompt.response_model()(
-            final_answer="Sorry, I couldn't generate a complete plan. Please try again.",
+            travel_plan="Sorry, I couldn't generate a complete plan. Please try again.",
             thought_process="The planner agent was unable to complete the task within the maximum steps allowed.",
         )
 
@@ -81,7 +81,7 @@ class PlannerAgent:
         :return: A list of tool descriptions.
         """
         logging.info("Preparing tools for the planner agent.")
-        # self.tools_manager.register_tool("retrieval_tool", RetrievalTool())
+        self.tools_manager.register_tool("retrieval_tool", RetrievalTool())
         self.tools_manager.register_tool("weather_tool", WeatherTool())
         self.tools_manager.register_tool("memory_tool", MemoryTool())
 

@@ -7,19 +7,19 @@ from app.prompts.prompt_base import PromptBase
 
 class PlanStepResponse(BaseModel):
     thought_process: str = Field(
-        description="List of thoughts that the AI travel assistant had while planning the trip."
+        description="List of thoughts used for reasoning that the AI travel assistant had while planning the trip."
     )
-    action: Optional[str] = Field(
+    tool: Optional[str] = Field(
         None,
-        description="The name of the tool to invoke next. Omit if this is the final answer.",
+        description="The name of the tool to invoke next. Omit if this is the final travel plan.",
     )
-    action_input: Optional[str] = Field(
+    tool_input: Optional[str] = Field(
         None,
-        description="The input to provide to the tool specified in `action`. Omit if this is the final answer.",
+        description="The input to provide to the tool specified in `tool`. Omit if this is the final travel_plan.",
     )
-    final_answer: Optional[str] = Field(
+    travel_plan: Optional[str] = Field(
         None,
-        description="The final answer or plan along with a friendly follow-up question to be shared with the user. Present only in the final response.",
+        description="The final plan along with a friendly follow-up question to be shared with the user.",
     )
 
 
@@ -32,7 +32,6 @@ class TravelAgentPrompt(PromptBase):
     def format(
         cls,
         user_query: str,
-        tool_info: str,
         context: str,
         max_steps: int = 5,
         current_step: int = 4,
@@ -48,7 +47,6 @@ class TravelAgentPrompt(PromptBase):
         prompt = cls.build_prompt(
             cls.prompt_name,
             user_query=user_query,
-            tool_info=tool_info,
             context=context,
             date=date,
             max_steps=max_steps,

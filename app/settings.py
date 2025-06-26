@@ -16,6 +16,6 @@ class LLMSettings(BaseSettings):
 class GroqConfig(LLMSettings):
     groq_api_key: str = Field(os.getenv("GROQ_API_KEY"))
     model: list[str] = Field(
-        default_factory=lambda: ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
+        default_factory=lambda: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
     )
     embedding_model: str = Field("sentence-transformers/all-mpnet-base-v2")

@@ -48,9 +48,9 @@ if __name__ == "__main__":
                 )
                 continue
 
-            print(f"💬 Answer: {response.final_answer}")
+            print(f"💬 Answer: {response.travel_plan}")
 
             chat_history.add_data(conversation_id, f"Question: {question}")
-            chat_history.add_data(conversation_id, f"Answer: {response.final_answer}")
+            chat_history.add_data(conversation_id, f"Answer: {response.travel_plan}")
     except KeyboardInterrupt:
         print("\n👋 Exiting gracefully.")
