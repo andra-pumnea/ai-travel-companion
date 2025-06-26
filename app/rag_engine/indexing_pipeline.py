@@ -1,35 +1,32 @@
 import logging
-from app.data_management.data_loader import (
-    read_trip_from_polarsteps,
-    convert_trip_to_documents,
-)
+
 from app.rag_engine.vector_store import VectorStore
+from app.settings import QdrantConfig
+from app.storage_clients.qdrant_client import QdrantClientWrapper
+from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
 
 
 class IndexingPipeline:
-    @staticmethod
-    def add_trip_to_vector_store():
+    def __init__(self):
+        self.storage_client = QdrantClientWrapper(QdrantConfig())
+        self.embeddings = HuggingFaceEmbeddings()
+        self.vector_store = VectorStore(self.storage_client, self.embeddings)
+
+    def add_trip_to_vector_store(self, data, user_trip_id: str):
         """
         Reads a trip from Polarsteps, converts it to documents, and adds them to the vector store.
+        :param data: The trip data to be indexed.
+        :param user_trip_id: Unique identifier for the user's trip collection.
         """
-        # Read the trip data from Polarsteps
-        trip = read_trip_from_polarsteps()
-        logging.info(f"Read trip data with {len(trip.all_steps)} steps.")
+        logging.info(f"Read trip data with {len(data.all_steps)} steps.")
 
-        # Convert the trip data to documents
-        documents = convert_trip_to_documents(trip)
-        logging.info(f"Converted trip data to {len(documents)} documents.")
+        prepared_data = self.vector_store.prepare_data(data.all_steps)
+        collection_name = f"{user_trip_id}_trip_collection"
 
-        # Add the documents to the vector store and return their IDs
-        vector_store = VectorStore()
         try:
-            vector_store.client.get_collection("trip_collection")
-        except Exception as e:
-            logging.warning(
-                "Collection 'trip_collection' does not exist. Creating a new collection."
+            self.vector_store.add_documents(
+                collection_name=collection_name, documents=prepared_data
             )
-            vector_store.create_collection("trip_collection")
-        document_ids = vector_store.add_documents(documents=documents)
-        logging.info(f"Added {len(document_ids)} documents to the vector store.")
-
-        return document_ids
+        except Exception as e:
+            logging.error(f"Error adding documents to vector store: {e}")
+            raise e

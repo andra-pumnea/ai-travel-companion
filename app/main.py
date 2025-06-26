@@ -7,6 +7,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.memory.local_memory import LocalMemory
 from app.rag_engine.indexing_pipeline import IndexingPipeline
+from app.rag_engine.retrieval_pipeline import RetrievalPipeline
+from app.data_management.data_loader import (
+    read_trip_from_polarsteps,
+)
 
 from app.planner_agent import PlannerAgent
 
@@ -23,11 +27,25 @@ if __name__ == "__main__":
 
     print("📒 Travel Journal RAG Assistant (type 'exit' to quit)\n")
 
-    _ = IndexingPipeline.add_trip_to_vector_store()
+    # Read the trip data from Polarsteps
+    trip_data = read_trip_from_polarsteps()
+    user_trip_id = f"{trip_data.user_id}_{trip_data.id}"
+
+    indexing_pipeline = IndexingPipeline()
+    try:
+        indexing_pipeline.add_trip_to_vector_store(trip_data, user_trip_id)
+    except Exception as e:
+        logging.error(f"Error during indexing: {e}")
+        print(
+            "⚠️ An error occurred while indexing the trip data. Please check the logs."
+        )
+        sys.exit(1)
+
     logging.info("Trip data indexed successfully.")
 
     chat_history = LocalMemory()
     planner_agent = PlannerAgent()
+    retrieval_pipeline = RetrievalPipeline()
     conversation_id = uuid.uuid4().hex
 
     try:
@@ -40,7 +58,12 @@ if __name__ == "__main__":
                 continue
 
             try:
-                response = planner_agent.run(user_query=question)
+                # response = planner_agent.run(
+                #     user_query=question, user_trip_id=user_trip_id
+                # )
+                response = retrieval_pipeline.run(
+                    user_query=question, user_trip_id=user_trip_id
+                )
             except Exception as e:
                 logging.error(f"Error during retrieval: {e}")
                 print(
@@ -48,9 +71,9 @@ if __name__ == "__main__":
                 )
                 continue
 
-            print(f"💬 Answer: {response.travel_plan}")
+            print(f"💬 Answer: {response.answer}")
 
             chat_history.add_data(conversation_id, f"Question: {question}")
-            chat_history.add_data(conversation_id, f"Answer: {response.travel_plan}")
+            chat_history.add_data(conversation_id, f"Answer: {response.answer}")
     except KeyboardInterrupt:
         print("\n👋 Exiting gracefully.")

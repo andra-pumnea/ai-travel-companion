@@ -2,6 +2,9 @@ import logging
 from typing import Any
 
 from app.rag_engine.vector_store import VectorStore
+from app.storage_clients.qdrant_client import QdrantClientWrapper
+from app.settings import QdrantConfig
+from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
 from app.llms.llm_manager import LLMManager
 from app.memory.local_memory import LocalMemory
 from app.prompts.query_rewriting import QueryRewriting
@@ -10,7 +13,9 @@ from app.prompts.question_answering import QuestionAnswering
 
 class RetrievalPipeline:
     def __init__(self):
-        self.vector_store = VectorStore()
+        self.storage_client = QdrantClientWrapper(QdrantConfig())
+        self.embeddings = HuggingFaceEmbeddings()
+        self.vector_store = VectorStore(self.storage_client, self.embeddings)
         self.llm_manager = LLMManager()
         self.memory = LocalMemory()
 
@@ -21,19 +26,22 @@ class RetrievalPipeline:
         :param prompt: The rendered prompt string."""
         logging.info(f"Prompt {prompt_name} token usage: {len(prompt)}")
 
-    def search_journal_entries(self, user_query: str, metadata: dict = None) -> dict:
+    def search_journal_entries(
+        self, user_query: str, user_trip_id: str, limit: int = 5
+    ) -> list[dict]:
         """
         Retrieves relevant documents from the vector store based on the user query.
         :param user_query: The query from the user.
         :param metadata: Optional metadata to filter the search.
         :return: A list of retrieved documents."""
-        retrieved_docs = self.vector_store.similarity_search(
-            query=user_query, metadata=metadata, k=5
+        collection_name = f"{user_trip_id}_trip_collection"
+        retrieved_docs = self.vector_store.search(
+            query=user_query, collection_name=collection_name, limit=limit
         )
         logging.info(
             f"Retrieved {len(retrieved_docs)} documents for query: {user_query}"
         )
-        return {"context": retrieved_docs}
+        return retrieved_docs
 
     def _rewrite_query(self, user_query: str, conversation_id: str) -> str:
         """
@@ -88,7 +96,7 @@ class RetrievalPipeline:
         )
         return response
 
-    def run(self, user_query: str, conversation_id: str):
+    def run(self, user_query: str, user_trip_id: str):
         """
         Runs the retrieval pipeline to get a response based on the user query and prompt.
 
@@ -97,18 +105,16 @@ class RetrievalPipeline:
         :return: The generated response from the LLM.
         """
         # Rewrite the user query if necessary
-        user_query = self._rewrite_query(user_query, conversation_id)
+        user_query = self._rewrite_query(user_query, user_trip_id)
 
         # Retrieve documents from the vector store based on the user query and metadata
-        docs = self.search_journal_entries(user_query)
-        context = (
-            "\n\n".join(doc.page_content for doc in docs["context"]) if docs else ""
-        )
+        docs = self.search_journal_entries(user_query, user_trip_id)
+        context = "\n\n".join(doc["description"] for doc in docs) if docs else ""
 
         # Generate the response using the LLM with the retrieved context
         response = self._generate_answer(
             user_query=user_query,
             context=context,
-            conversation_id=conversation_id,
+            conversation_id=user_trip_id,
         )
         return response

@@ -14,9 +14,13 @@ class PlannerAgent:
         self.tools_manager = ToolManager()
         self.steps_so_far = []
 
-    def run(self, user_query: str, max_steps: int = 5):
+    def run(self, user_query: str, user_trip_id: str, max_steps: int = 5):
         """
         Generate a plan for the given task using the planner.
+        :param user_query: The user's query to plan for.
+        :param user_trip_id: Unique identifier for the user's trip.
+        :param max_steps: Maximum number of planning steps to take.
+        :return: A response model containing the travel plan and thought process.
         """
         logging.info(f"Running planner agent with user query: {user_query}")
 
@@ -40,7 +44,7 @@ class PlannerAgent:
                 max_tokens=1000,
             )
 
-            if response.travel_plan:
+            if response.answer:
                 logging.info(
                     f"Final answer received from the planner agent. Thought process: {response.thought_process}"
                 )
@@ -71,7 +75,7 @@ class PlannerAgent:
                 )
 
         return TravelAgentPrompt.response_model()(
-            travel_plan="Sorry, I couldn't generate a complete plan. Please try again.",
+            answer="Sorry, I couldn't generate a complete plan. Please try again.",
             thought_process="The planner agent was unable to complete the task within the maximum steps allowed.",
         )
 

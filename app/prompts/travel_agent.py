@@ -17,9 +17,9 @@ class PlanStepResponse(BaseModel):
         None,
         description="The input to provide to the tool specified in `tool`. Omit if this is the final travel_plan.",
     )
-    travel_plan: Optional[str] = Field(
+    answer: Optional[str] = Field(
         None,
-        description="The final plan along with a friendly follow-up question to be shared with the user.",
+        description="The final answer consisting of a plan to be shared with the user.",
     )
 
 

@@ -19,3 +19,9 @@ class GroqConfig(LLMSettings):
         default_factory=lambda: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
     )
     embedding_model: str = Field("sentence-transformers/all-mpnet-base-v2")
+
+
+class QdrantConfig(BaseSettings):
+    """Settings for Qdrant vector store."""
+
+    qdrant_url: str = Field(os.getenv("QDRANT_URL", "http://localhost:6333"))

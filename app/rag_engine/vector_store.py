@@ -1,11 +1,7 @@
 import logging
 
-from langchain_qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient, models
-from qdrant_client.models import Distance, VectorParams
-
-
-from app.rag_engine.embeddings import Embeddings
+from app.storage_clients.storage_base import StorageBase
+from app.embeddings.embedding_base import EmbeddingBase
 
 
 class VectorStore:
@@ -19,84 +15,62 @@ class VectorStore:
             cls._instance = super(VectorStore, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, client: StorageBase, embeddings: EmbeddingBase):
         if self.__class__._initialized:
             return  # Prevent re-initializing
 
-        self.qdrant_client = QdrantClient(":memory:")
-
-        # Initialize the embeddings
-        self.embeddings = Embeddings()
-
-        # Initialize vector store as None
-        self.qdrant_vector_store = None
+        self.client = client
+        self.embeddings = embeddings
 
         self.__class__._initialized = True  # Mark as initialized
 
-    def get_vector_store(self) -> QdrantVectorStore:
-        """Get the Qdrant vector store."""
-        if self.qdrant_vector_store is None:
-            raise ValueError(
-                "Vector store not initialized. Call create_collection first."
-            )
-        return self.qdrant_vector_store
+    def prepare_data(self, documents: list[str]) -> list:
+        """
+        Prepares data for vectorization.
+        :param documents: List of documents to prepare.
+        :return: List of prepared documents with embeddings.
+        """
+        texts = [
+            doc.description if doc.description else doc.display_name
+            for doc in documents
+        ]
 
-    def create_collection(self, collection_name: str):
-        """
-        Create a new collection in the vector store.
-        """
-        try:
-            self.qdrant_client.create_collection(
-                collection_name=collection_name,
-                vectors_config=VectorParams(
-                    size=self.embeddings.embedding_size, distance=Distance.COSINE
-                ),
-            )
-            logging.info(f"Collection '{collection_name}' created successfully.")
-            # Initialize the vector store
-            self.qdrant_vector_store = QdrantVectorStore(
-                client=self.qdrant_client,
-                collection_name=collection_name,
-                embedding=self.embeddings.get_embedding_model(),
-            )
-        except Exception as e:
-            logging.error(f"Error creating collection '{collection_name}': {e}")
+        embeddings = self.embeddings.embed(texts)
 
-    def add_documents(self, documents: list) -> list:
-        """
-        Add documents to the vector store.
+        prepared_documents = [
+            self.client.trip_step_to_point(dto=doc, embedding=embedding)
+            for doc, embedding in zip(documents, embeddings)
+        ]
+        logging.info(f"Prepared {len(prepared_documents)} documents with embeddings.")
+        return prepared_documents
 
+    def add_documents(self, collection_name: str, documents: list[str]):
         """
-        try:
-            document_ids = self.qdrant_vector_store.add_documents(documents=documents)
-        except Exception as e:
-            logging.error(f"Error adding documents to vector store: {e}")
-            document_ids = []
-        return document_ids
+        Adds documents to the vector store.
+        :param collection_name: Name of the collection to add documents to.
+        :param documents: List of documents to add.
+        """
+        if not self.client.collection_exists(collection_name):
+            embedding_size = self.embeddings.get_embedding_dimension()
+            self.client.create_collection(collection_name, embedding_size)
 
-    def similarity_search(self, query: str, metadata: dict = None, k: int = 5) -> list:
-        """
-        Perform a similarity search in the vector store.
+        self.client.add_documents(collection_name, documents)
 
-        :param query: The query string to search for.
-        :param k: The number of nearest neighbors to return.
-        :return: A list of documents that are similar to the query.
+    def add_document(self, collection_name: str, document: str):
         """
-        metadata_filter = None
-        if metadata:
-            metadata_filter = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="metadata.location.country_code",
-                        match=models.MatchValue(value=metadata.get("country_code", "")),
-                    )
-                ]
-            )
-        try:
-            results = self.qdrant_vector_store.similarity_search(
-                query=query, k=k, filter=metadata_filter
-            )
-            return results
-        except Exception as e:
-            logging.error(f"Error during similarity searc, returning empty result: {e}")
-            return []
+        Adds a single document to the vector store.
+        :param collection_name: Name of the collection to add the document to.
+        :param document: Document to add.
+        """
+        self.client.add_document(collection_name, [document])
+
+    def search(self, collection_name: str, query: str, limit: int = 5):
+        """
+        Searches for documents in the vector store.
+        :param collection_name: Name of the collection to search in.
+        :param query: Query string to search for.
+        :param limit: Maximum number of results to return.
+        :return: List of search results.
+        """
+        embedding = self.embeddings.embed(query)
+        return self.client.search(collection_name, embedding, limit)

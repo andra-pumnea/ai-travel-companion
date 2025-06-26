@@ -15,7 +15,7 @@ class RetrievalTool(ToolBase):
         super().__init__(name, description)
         self.retrieval_pipeline = RetrievalPipeline()
 
-    def run(self, query: str, metadata: dict = None) -> dict:
+    def run(self, query: str, user_trip_id: str) -> dict:
         """
         Retrieves information based on the provided query and metadata.
         :param query: The query to search for in the journal.
@@ -23,7 +23,7 @@ class RetrievalTool(ToolBase):
         :return: A dict containing the retrieved information.
         """
         search_results = self.retrieval_pipeline.search_journal_entries(
-            user_query=query, metadata=metadata
+            user_query=query, user_trip_id=user_trip_id
         )
         return search_results
 
