@@ -198,3 +198,4 @@ cython_debug/
 *.code-workspace
 
 data/
+qdrant_storage/
