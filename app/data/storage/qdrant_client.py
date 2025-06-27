@@ -87,14 +87,17 @@ class QdrantClientWrapper(StorageBase):
         :param k: Number of nearest neighbors to return.
         :return: List of similar documents and their IDs.
         """
-        results = self.client.query_points(
-            collection_name=collection_name,
-            query=query_embedding,
-            using="description",
-            limit=k,
-        )
+        try:
+            results = self.client.query_points(
+                collection_name=collection_name,
+                query=query_embedding,
+                using="description",
+                limit=k,
+            )
+        except Exception as e:
+            raise ValueError(f"Error searching in collection '{collection_name}': {e}")
         if not results:
-            logging.warning(
+            logging.info(
                 f"No results found for query in collection '{collection_name}'."
             )
             return []

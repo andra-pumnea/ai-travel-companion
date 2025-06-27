@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+import logging
+from fastapi import APIRouter, HTTPException
 from http import HTTPStatus
 
 from app.server.api_models import (
@@ -22,13 +23,15 @@ async def search_journal(request: SearchJournalRequest) -> SearchJournalResponse
     :return: SearchJournalResponse containing a list of documents matching the query.
     """
 
-    documents = await journal_service.search_journal(
-        user_query=request.user_query,
-        user_id=request.user_id,
-        trip_id=request.trip_id,
-        limit=request.limit,
-    )
-
+    try:
+        documents = await journal_service.search_journal(
+            user_query=request.user_query,
+            user_id=request.user_id,
+            trip_id=request.trip_id,
+            limit=request.limit,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
     return SearchJournalResponse(documents=documents)
 
 
@@ -46,11 +49,19 @@ async def search_journal_with_generation(
     :return: SearchJournalWithGenerationResponse containing a list of documents matching the query and generated answer.
     """
 
-    answer, documents = await journal_service.search_journal_with_generation(
-        user_query=request.user_query,
-        user_id=request.user_id,
-        trip_id=request.trip_id,
-        limit=request.limit,
-    )
+    try:
+        answer, documents = await journal_service.search_journal_with_generation(
+            user_query=request.user_query,
+            user_id=request.user_id,
+            trip_id=request.trip_id,
+            limit=request.limit,
+        )
+    except Exception as e:
+        # Log the error and return an empty response or handle it as needed
+        logging.error(f"Error searching journal with generation: {e}")
+        answer = (
+            "An error occurred while generating the answer. Please try again later."
+        )
+        documents = []
 
     return SearchJournalWithGenerationResponse(answer=answer, documents=documents)

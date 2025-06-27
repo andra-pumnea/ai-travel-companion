@@ -29,7 +29,7 @@ class JournalService:
                 )
             return documents
         except Exception as e:
-            raise ValueError(f"Error during journal search: {e}")
+            raise e
 
     async def search_journal_with_generation(
         self, user_query: str, user_id: str, trip_id: str, limit: int = 5

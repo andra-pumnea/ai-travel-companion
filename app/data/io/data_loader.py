@@ -9,7 +9,7 @@ from app.data.models.trip import TripDTO
 
 def read_trip_from_polarsteps() -> TripDTO:
     with open(
-        os.path.expanduser("~/ai-travel-companion/app/data_management/data/trip.json"),
+        os.path.expanduser("~/ai-travel-companion/app/data/files/trip.json"),
         "r",
     ) as f:
         data = json.load(f)
