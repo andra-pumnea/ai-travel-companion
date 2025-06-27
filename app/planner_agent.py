@@ -51,19 +51,31 @@ class PlannerAgent:
                 return response
 
             try:
-                action = response.tool
-                action_input = response.tool_input
+                tool_name = response.tool
+                tool_input = response.tool_input
                 thought_process = response.thought_process
                 logging.info(
-                    f"Step {step + 1}: Thought: {response.thought_process}, Action: {action}, Action Input: {action_input}"
+                    f"Step {step + 1}: Thought: {response.thought_process}, Tool: {tool_name}, Action Input: {tool_input}"
                 )
 
-                if action and action_input:
-                    tool_response = self.tools_manager.get_tool(action).run(
-                        action_input
-                    )
+                if tool_name:
+                    try:
+                        tool = self.tools_manager.get_tool(tool_name)
+                    except KeyError:
+                        logging.error(f"Tool '{tool_name}' not found.")
+                        self.steps_so_far.append(
+                            f"Step {step + 1}/{max_steps}: Error: Tool '{tool_name}' not found."
+                        )
+                        continue
+                    if tool.name == "retrieval_tool":
+                        tool_response = tool.run(
+                            query=user_query,
+                            user_trip_id=user_trip_id,
+                        )
+                    else:
+                        tool_response = tool.run(tool_input)
                     self.steps_so_far.append(
-                        f"Step {step + 1}/{max_steps}: Tool: {action}, Input: {action_input}, Response: {tool_response}, Thought Process: {thought_process} \n"
+                        f"Step {step + 1}/{max_steps}: Tool: {tool_name}, Input: {tool_input}, Response: {tool_response}, Thought Process: {thought_process} \n"
                     )
                 else:
                     logging.info("No tool or tool_input generated.")

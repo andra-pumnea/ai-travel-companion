@@ -1,6 +1,6 @@
 import logging
 
-from app.storage_clients.storage_base import StorageBase
+from app.data.storage.storage_base import StorageBase
 from app.embeddings.embedding_base import EmbeddingBase
 
 

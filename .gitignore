@@ -197,5 +197,5 @@ cython_debug/
 .vscode
 *.code-workspace
 
-data/
+files/
 qdrant_storage/

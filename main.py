@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from app.memory.local_memory import LocalMemory
 from app.rag_engine.indexing_pipeline import IndexingPipeline
 from app.rag_engine.retrieval_pipeline import RetrievalPipeline
-from app.data_management.data_loader import (
+from app.data.io.data_loader import (
     read_trip_from_polarsteps,
 )
 

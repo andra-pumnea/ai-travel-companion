@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from app.rag_engine.vector_store import VectorStore
-from app.storage_clients.qdrant_client import QdrantClientWrapper
+from app.data.storage.qdrant_client import QdrantClientWrapper
 from app.settings import QdrantConfig
 from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
 from app.llms.llm_manager import LLMManager
@@ -96,7 +96,9 @@ class RetrievalPipeline:
         )
         return response
 
-    def run(self, user_query: str, user_trip_id: str):
+    def run(
+        self, user_query: str, user_trip_id: str, limit: int = 5
+    ) -> tuple[list[dict], Any]:
         """
         Runs the retrieval pipeline to get a response based on the user query and prompt.
 
@@ -108,7 +110,7 @@ class RetrievalPipeline:
         user_query = self._rewrite_query(user_query, user_trip_id)
 
         # Retrieve documents from the vector store based on the user query and metadata
-        docs = self.search_journal_entries(user_query, user_trip_id)
+        docs = self.search_journal_entries(user_query, user_trip_id, limit)
         context = "\n\n".join(doc["description"] for doc in docs) if docs else ""
 
         # Generate the response using the LLM with the retrieved context
@@ -117,4 +119,4 @@ class RetrievalPipeline:
             context=context,
             conversation_id=user_trip_id,
         )
-        return response
+        return response.answer, docs

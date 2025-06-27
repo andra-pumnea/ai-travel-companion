@@ -19,7 +19,7 @@ a) weather_tool(location: str):
 b) memory_tool(): 
 - Use this tool to retrieve any preferences that the user has shared from past travels, especially if they don't explicitly mention them in the current request.
 - This tool has information about the user's preferences, such as preferred food, interests, activities any other relevant details that can help in planning the trip.
-c) retrieval_tool(query: str, metadata: dict = None):
+c) retrieval_tool(query: str, user_trip_id: str):
 - Use this tool to gather information about the user's past travels, to understand if they have visited the destination before, and to gather any relevant information about their travel history.
 - This tools uses the user's past travel journals as a data source.
 - Do not use this tool to gather information about the destination, as it does not use travel guides as a source.

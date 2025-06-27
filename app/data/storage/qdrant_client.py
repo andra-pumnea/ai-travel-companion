@@ -1,12 +1,12 @@
 import logging
 
-from settings import QdrantConfig
+from app.settings import QdrantConfig
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from qdrant_client.models import PointStruct
 
-from app.storage_clients.storage_base import StorageBase
-from app.data_models.trip import TripStepDTO
+from app.data.storage.storage_base import StorageBase
+from app.data.models.trip import TripStepDTO
 
 
 class QdrantClientWrapper(StorageBase):
