@@ -1,6 +1,4 @@
-import logging
-from fastapi import APIRouter, HTTPException
-from http import HTTPStatus
+from fastapi import APIRouter, HTTPException, status
 
 from app.server.api_models import (
     SearchJournalRequest,
@@ -9,13 +7,16 @@ from app.server.api_models import (
     SearchJournalWithGenerationResponse,
 )
 from app.services.journal_service import JournalService
+from app.exceptions import CollectionNotFoundError, LLMManagerError
 
 
 router = APIRouter()
 journal_service = JournalService()
 
 
-@router.post("/search", response_model=SearchJournalResponse, status_code=HTTPStatus.OK)
+@router.post(
+    "/search", response_model=SearchJournalResponse, status_code=status.HTTP_200_OK
+)
 async def search_journal(request: SearchJournalRequest) -> SearchJournalResponse:
     """
     Endpoint to search the travel journal based on user query, user ID, and trip ID.
@@ -30,15 +31,23 @@ async def search_journal(request: SearchJournalRequest) -> SearchJournalResponse
             trip_id=request.trip_id,
             limit=request.limit,
         )
+    except CollectionNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{str(e)}",
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}",
+        )
     return SearchJournalResponse(documents=documents)
 
 
 @router.post(
     "/search_with_generation",
     response_model=SearchJournalWithGenerationResponse,
-    status_code=HTTPStatus.OK,
+    status_code=status.HTTP_200_OK,
 )
 async def search_journal_with_generation(
     request: SearchJournalWithGenerationRequest,
@@ -56,12 +65,20 @@ async def search_journal_with_generation(
             trip_id=request.trip_id,
             limit=request.limit,
         )
-    except Exception as e:
-        # Log the error and return an empty response or handle it as needed
-        logging.error(f"Error searching journal with generation: {e}")
-        answer = (
-            "An error occurred while generating the answer. Please try again later."
+    except CollectionNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
         )
-        documents = []
+    except LLMManagerError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}",
+        )
 
     return SearchJournalWithGenerationResponse(answer=answer, documents=documents)

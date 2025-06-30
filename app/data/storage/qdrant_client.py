@@ -7,6 +7,7 @@ from qdrant_client.models import PointStruct
 
 from app.data.storage.storage_base import StorageBase
 from app.data.models.trip import TripStepDTO
+from app.exceptions import QdrantClientError, CollectionNotFoundError
 
 
 class QdrantClientWrapper(StorageBase):
@@ -41,7 +42,9 @@ class QdrantClientWrapper(StorageBase):
                     },
                 )
             except Exception as e:
-                raise ValueError(f"Error creating collection '{collection_name}': {e}")
+                raise QdrantClientError(
+                    f"Error creating collection '{collection_name}': {e}"
+                )
             logging.info(
                 f"Collection '{collection_name}' created successfully with embedding size {embedding_size}."
             )
@@ -59,7 +62,7 @@ class QdrantClientWrapper(StorageBase):
         try:
             self.client.upload_points(collection_name=collection_name, points=documents)
         except Exception as e:
-            raise ValueError(
+            raise QdrantClientError(
                 f"Error adding documents to collection '{collection_name}': {e}"
             )
         logging.info(
@@ -77,7 +80,7 @@ class QdrantClientWrapper(StorageBase):
             self.client.upsert(collection_name=collection_name, points=[document])
             logging.info(f"Document added to collection '{collection_name}'.")
         except Exception as e:
-            raise ValueError(f"Error adding document: {e}")
+            raise QdrantClientError(f"Error adding document: {e}")
 
     def search(self, collection_name: str, query_embedding: list, k: int = 5):
         """
@@ -87,6 +90,8 @@ class QdrantClientWrapper(StorageBase):
         :param k: Number of nearest neighbors to return.
         :return: List of similar documents and their IDs.
         """
+        if not self.collection_exists(collection_name):
+            raise CollectionNotFoundError(collection_name)
         try:
             results = self.client.query_points(
                 collection_name=collection_name,
@@ -95,7 +100,8 @@ class QdrantClientWrapper(StorageBase):
                 limit=k,
             )
         except Exception as e:
-            raise ValueError(f"Error searching in collection '{collection_name}': {e}")
+            logging.error(f"Error during search in collection '{collection_name}': {e}")
+            raise QdrantClientError("Qdrant search error")
         if not results:
             logging.info(
                 f"No results found for query in collection '{collection_name}'."

@@ -25,3 +25,11 @@ class QdrantConfig(BaseSettings):
     """Settings for Qdrant vector store."""
 
     qdrant_url: str = Field(os.getenv("QDRANT_URL", "http://localhost:6333"))
+
+
+class APISettings(BaseSettings):
+    """Base settings for API configurations."""
+
+    project_name: str = "Travel Journal RAG Assistant API"
+    project_description: str = "API for the Travel Journal RAG Assistant, providing endpoints to search travel journals."
+    project_version: str = "1.0.0"

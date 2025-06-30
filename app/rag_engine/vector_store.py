@@ -2,6 +2,7 @@ import logging
 
 from app.data.storage.storage_base import StorageBase
 from app.embeddings.embedding_base import EmbeddingBase
+from app.exceptions import VectorStoreError
 
 
 class VectorStore:
@@ -72,5 +73,9 @@ class VectorStore:
         :param limit: Maximum number of results to return.
         :return: List of search results.
         """
-        embedding = self.embeddings.embed(query)
+        try:
+            embedding = self.embeddings.embed(query)
+        except Exception as e:
+            logging.error(f"Error embedding query: {str(e)}")
+            raise VectorStoreError(f"{str(e)}")
         return self.client.search(collection_name, embedding, limit)

@@ -2,8 +2,7 @@ import logging
 
 from app.server.api_models import PlanTripRequest, PlanTripResponse
 from app.services.planner_service import PlannerService
-from fastapi import APIRouter
-from http import HTTPStatus
+from fastapi import APIRouter, status
 
 router = APIRouter()
 planner_service = PlannerService()
@@ -12,7 +11,7 @@ planner_service = PlannerService()
 @router.post(
     "/plan_trip",
     response_model=PlanTripResponse,
-    status_code=HTTPStatus.OK,
+    status_code=status.HTTP_200_OK,
 )
 async def plan_trip(request: PlanTripRequest) -> PlanTripResponse:
     """

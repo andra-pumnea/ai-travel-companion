@@ -19,17 +19,14 @@ class JournalService:
         :return: A list of documents matching the query.
         """
         user_trip_id = f"{user_id}_{trip_id}"
-        try:
-            documents = self.retrieval_pipeline.search_journal_entries(
-                user_query=user_query, user_trip_id=user_trip_id, limit=limit
+        documents = self.retrieval_pipeline.search_journal_entries(
+            user_query=user_query, user_trip_id=user_trip_id, limit=limit
+        )
+        if not documents:
+            logging.info(
+                f"No documents found for user_id={user_id}, trip_id={trip_id}, query='{user_query}'"
             )
-            if not documents:
-                logging.info(
-                    f"No documents found for user_id={user_id}, trip_id={trip_id}, query='{user_query}'"
-                )
-            return documents
-        except Exception as e:
-            raise e
+        return documents
 
     async def search_journal_with_generation(
         self, user_query: str, user_id: str, trip_id: str, limit: int = 5
@@ -44,14 +41,9 @@ class JournalService:
         :return: A list of documents matching the query.
         """
         user_trip_id = f"{user_id}_{trip_id}"
-        try:
-            answer, documents = self.retrieval_pipeline.run(
-                user_query=user_query, user_trip_id=user_trip_id, limit=limit
-            )
-            if not documents:
-                logging.info(
-                    f"No documents found for user_id={user_id}, trip_id={trip_id}"
-                )
-            return answer, documents
-        except Exception as e:
-            raise ValueError(f"Error during RAG journal search: {e}")
+        answer, documents = self.retrieval_pipeline.run(
+            user_query=user_query, user_trip_id=user_trip_id, limit=limit
+        )
+        if not documents:
+            logging.info(f"No documents found for user_id={user_id}, trip_id={trip_id}")
+        return answer, documents

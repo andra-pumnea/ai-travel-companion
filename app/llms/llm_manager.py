@@ -5,6 +5,12 @@ from typing import Type
 from pydantic import BaseModel
 
 from app.llms.llm_clients.llm_router import LLMRouter
+from app.exceptions import (
+    LLMManagerError,
+    LLMRateLimitError,
+    LLMServiceUnavailableError,
+    LLMGenerationError,
+)
 
 
 class LLMManager:
@@ -52,29 +58,28 @@ class LLMManager:
         :param kwargs: Additional parameters for the LLM call.
         :return: The response from the LLM.
         """
+
         for model in self.settings.model:
             logging.info(f"Attempting to call model: {model}")
             for attempt in range(max_retries):
                 try:
-                    return LLMManager().generate_response(model, **kwargs)
+                    return self.generate_response(model, **kwargs)
+                except LLMRateLimitError:
+                    wait_time = retry_backoff_base * (2**attempt)
+                    logging.info(
+                        f"Rate limited. Retrying in {wait_time}s... (attempt {attempt + 1})"
+                    )
+                    time.sleep(wait_time)
+                except LLMServiceUnavailableError as e:
+                    logging.error(f"Groq internal error {str(e)}. Retrying...")
+                    time.sleep(retry_backoff_base * (2**attempt))
+                except LLMGenerationError as e:
+                    logging.error(
+                        f"Unrecoverable LLM error for model {model}: {str(e)}"
+                    )
+                    break
                 except Exception as e:
-                    if LLMManager._is_rate_limit_error(e):
-                        wait_time = retry_backoff_base * attempt
-                        logging.warning(
-                            f"Rate limited. Retrying in {wait_time}s... (Attempt {attempt})"
-                        )
-                        time.sleep(wait_time)
-                    else:
-                        logging.error(f"Error with model {model}: {e}")
-                        break
-            logging.info(f"Exhausted retries for:{model}, trying next model...")
-        raise RuntimeError("All fallback models failed.")
-
-    @staticmethod
-    def _is_rate_limit_error(error):
-        """
-        Checks if the error is a rate limit error.
-        :param error: The error to check.
-        :return: True if the error is a rate limit error, False otherwise.
-        """
-        return "429" in str(error).lower()
+                    logging.error(f"Unexpected error: {e}")
+                    break
+            logging.info(f"Model {model} exhausted retries. Trying next...")
+        raise LLMManagerError("All fallback models failed.")

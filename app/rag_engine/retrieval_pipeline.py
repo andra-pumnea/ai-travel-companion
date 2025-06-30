@@ -106,14 +106,11 @@ class RetrievalPipeline:
         :param prompt_name: The name of the prompt to be used.
         :return: The generated response from the LLM.
         """
-        # Rewrite the user query if necessary
         user_query = self._rewrite_query(user_query, user_trip_id)
 
-        # Retrieve documents from the vector store based on the user query and metadata
         docs = self.search_journal_entries(user_query, user_trip_id, limit)
         context = "\n\n".join(doc["description"] for doc in docs) if docs else ""
 
-        # Generate the response using the LLM with the retrieved context
         response = self._generate_answer(
             user_query=user_query,
             context=context,

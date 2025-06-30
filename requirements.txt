@@ -6,3 +6,5 @@ sentence-transformers
 instructor
 fastapi
 uvicorn
+pytest
+pytest-asyncio
