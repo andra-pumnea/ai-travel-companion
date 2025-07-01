@@ -1,6 +1,6 @@
 import logging
 from typing import Any, Type
-from httpx import HTTPStatusError
+from httpx import HTTPStatusError, TimeoutException
 
 import instructor
 from pydantic import BaseModel
@@ -9,9 +9,11 @@ from groq import Groq
 from app.llms.llm_clients.llm_client_base import BaseLLMClient
 from app.settings import GroqConfig
 from app.exceptions import (
+    LLMTimeoutError,
     LLMRateLimitError,
     LLMServiceUnavailableError,
     LLMGenerationError,
+    LLMUnexpectedError,
 )
 
 
@@ -51,6 +53,9 @@ class GroqClient(BaseLLMClient):
         }
         try:
             return self.client.chat.completions.create(**completion_params)
+        except TimeoutException as e:
+            logging.error(f"Groq timeout: {e}")
+            raise LLMTimeoutError
         except HTTPStatusError as e:
             status = e.response.status_code
             logging.error(f"Groq HTTP error {status}: {e.response.text}")
@@ -59,12 +64,12 @@ class GroqClient(BaseLLMClient):
                 raise LLMRateLimitError("Rate limit exceeded")
             elif status >= 500:
                 raise LLMServiceUnavailableError(f"LLM service unavailable: {str(e)}")
-            else:
+            elif status >= 400:
                 raise LLMGenerationError(f"LLM generation error: {str(e)}")
 
         except Exception as e:
-            logging.exception(f"Unhandled LLM error : {str(e)}")
-            raise LLMGenerationError("Unexpected error during LLM completion")
+            logging.error(f"Unhandled LLM error: {str(e)}")
+            raise LLMUnexpectedError(str(e))
 
     @property
     def client(self) -> Groq:

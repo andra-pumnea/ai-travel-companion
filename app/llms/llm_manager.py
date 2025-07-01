@@ -1,4 +1,5 @@
 import time
+import random
 import logging
 
 from typing import Type
@@ -8,8 +9,10 @@ from app.llms.llm_clients.llm_router import LLMRouter
 from app.exceptions import (
     LLMManagerError,
     LLMRateLimitError,
+    LLMTimeoutError,
     LLMServiceUnavailableError,
     LLMGenerationError,
+    LLMUnexpectedError,
 )
 
 
@@ -50,7 +53,11 @@ class LLMManager:
         )
 
     def call_llm_with_retry(
-        self, max_retries: int = 5, retry_backoff_base: int = 2, **kwargs
+        self,
+        max_retries: int = 5,
+        retry_backoff_base: int = 2,
+        jitter_factor: float = 0.5,
+        **kwargs,
     ):
         """
         Calls the LLM with retry logic.
@@ -65,21 +72,48 @@ class LLMManager:
                 try:
                     return self.generate_response(model, **kwargs)
                 except LLMRateLimitError:
-                    wait_time = retry_backoff_base * (2**attempt)
+                    wait_time = LLMManager.calculate_backoff_time(
+                        retry_backoff_base, attempt, jitter_factor
+                    )
                     logging.info(
                         f"Rate limited. Retrying in {wait_time}s... (attempt {attempt + 1})"
                     )
                     time.sleep(wait_time)
+                except LLMTimeoutError:
+                    wait_time = LLMManager.calculate_backoff_time(
+                        retry_backoff_base, attempt, jitter_factor
+                    )
+                    logging.info(
+                        f"Timeout occurred, retrying after {wait_time}s ... (attempt {attempt + 1})"
+                    )
+                    time.sleep(wait_time)
                 except LLMServiceUnavailableError as e:
-                    logging.error(f"Groq internal error {str(e)}. Retrying...")
-                    time.sleep(retry_backoff_base * (2**attempt))
-                except LLMGenerationError as e:
+                    wait_time = LLMManager.calculate_backoff_time(
+                        retry_backoff_base, attempt, jitter_factor
+                    )
+                    logging.error(
+                        f"Groq internal error {str(e)}. Retrying in {wait_time}s... (attempt {attempt + 1})"
+                    )
+                    time.sleep(wait_time)
+                except (LLMGenerationError, LLMUnexpectedError) as e:
                     logging.error(
                         f"Unrecoverable LLM error for model {model}: {str(e)}"
                     )
                     break
-                except Exception as e:
-                    logging.error(f"Unexpected error: {e}")
-                    break
             logging.info(f"Model {model} exhausted retries. Trying next...")
         raise LLMManagerError("All fallback models failed.")
+
+    @staticmethod
+    def calculate_backoff_time(
+        base: int, attempt: int, jitter_factor: float = 0.5
+    ) -> float:
+        """
+        Calculate the backoff time with jitter.
+        :param base: The base backoff time.
+        :param attempt: The current retry attempt.
+        :param jitter_factor: The factor to apply for jitter.
+        :return: The calculated backoff time.
+        """
+        base_wait = base * (2**attempt)
+        jitter = random.uniform(0, jitter_factor * base_wait)
+        return base_wait + jitter
