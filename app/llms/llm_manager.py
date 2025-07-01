@@ -6,7 +6,7 @@ from typing import Type
 from pydantic import BaseModel
 
 from app.llms.llm_clients.llm_router import LLMRouter
-from app.exceptions import (
+from app.core.exceptions.llm_exceptions import (
     LLMManagerError,
     LLMRateLimitError,
     LLMTimeoutError,

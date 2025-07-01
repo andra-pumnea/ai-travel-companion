@@ -5,8 +5,11 @@ from qdrant_client.models import Distance, VectorParams
 from qdrant_client.models import PointStruct
 
 from app.data.storage.qdrant_client import QdrantClientWrapper
-from app.settings import QdrantConfig
-from app.exceptions import QdrantClientError, CollectionNotFoundError
+from app.core.settings import QdrantConfig
+from app.core.exceptions.custom_exceptions import (
+    QdrantClientError,
+    CollectionNotFoundError,
+)
 
 
 class TestQdrantClient:

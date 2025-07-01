@@ -1,4 +1,4 @@
-from app.planner_agent import PlannerAgent
+from app.planner_engine.planner_agent import PlannerAgent
 
 
 class PlannerService:

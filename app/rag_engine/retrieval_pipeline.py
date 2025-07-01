@@ -3,7 +3,7 @@ from typing import Any
 
 from app.rag_engine.vector_store import VectorStore
 from app.data.storage.qdrant_client import QdrantClientWrapper
-from app.settings import QdrantConfig
+from app.core.settings import QdrantConfig
 from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
 from app.llms.llm_manager import LLMManager
 from app.memory.local_memory import LocalMemory

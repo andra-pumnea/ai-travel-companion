@@ -7,8 +7,8 @@ from pydantic import BaseModel
 from groq import Groq
 
 from app.llms.llm_clients.llm_client_base import BaseLLMClient
-from app.settings import GroqConfig
-from app.exceptions import (
+from app.core.settings import GroqConfig
+from app.core.exceptions.llm_exceptions import (
     LLMTimeoutError,
     LLMRateLimitError,
     LLMServiceUnavailableError,

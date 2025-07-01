@@ -4,7 +4,10 @@ from httpx import ASGITransport, AsyncClient
 from fastapi import status
 
 from main import app
-from app.exceptions import CollectionNotFoundError, LLMManagerError
+from app.core.exceptions.custom_exceptions import (
+    CollectionNotFoundError,
+    LLMManagerError,
+)
 
 
 @pytest.mark.asyncio

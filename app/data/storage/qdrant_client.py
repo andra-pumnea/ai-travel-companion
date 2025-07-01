@@ -1,13 +1,16 @@
 import logging
 
-from app.settings import QdrantConfig
+from app.core.settings import QdrantConfig
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from qdrant_client.models import PointStruct
 
 from app.data.storage.storage_base import StorageBase
 from app.data.models.trip import TripStepDTO
-from app.exceptions import QdrantClientError, CollectionNotFoundError
+from app.core.exceptions.custom_exceptions import (
+    QdrantClientError,
+    CollectionNotFoundError,
+)
 
 
 class QdrantClientWrapper(StorageBase):

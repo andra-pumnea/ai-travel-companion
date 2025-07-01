@@ -1,7 +1,7 @@
 import logging
 
 from app.rag_engine.vector_store import VectorStore
-from app.settings import QdrantConfig
+from app.core.settings import QdrantConfig
 from app.data.storage.qdrant_client import QdrantClientWrapper
 from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
 

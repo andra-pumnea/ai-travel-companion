@@ -1,7 +1,7 @@
-from app.memory.memory_base import BaseMemory
+from app.memory.memory_store_base import BaseMemoryStore
 
 
-class LocalMemory(BaseMemory):
+class LocalMemory(BaseMemoryStore):
     """
     In-memory storage for managing memory data.
     """

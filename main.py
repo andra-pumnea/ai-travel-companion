@@ -2,7 +2,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 
-from app.settings import APISettings
+from app.core.settings import APISettings
 from app.server.routers import journal, planner
 
 

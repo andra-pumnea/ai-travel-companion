@@ -2,7 +2,7 @@ import logging
 
 from app.data.storage.storage_base import StorageBase
 from app.embeddings.embedding_base import EmbeddingBase
-from app.exceptions import VectorStoreError
+from app.core.exceptions.custom_exceptions import VectorStoreError
 
 
 class VectorStore:

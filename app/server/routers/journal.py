@@ -7,7 +7,8 @@ from app.server.api_models import (
     SearchJournalWithGenerationResponse,
 )
 from app.services.journal_service import JournalService
-from app.exceptions import CollectionNotFoundError, LLMManagerError
+from app.core.exceptions.custom_exceptions import CollectionNotFoundError
+from app.core.exceptions.llm_exceptions import LLMManagerError
 
 
 router = APIRouter()

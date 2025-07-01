@@ -9,7 +9,7 @@ from app.data.io.data_loader import (
     read_trip_from_polarsteps,
 )
 
-from app.planner_agent import PlannerAgent
+from app.planner_engine.planner_agent import PlannerAgent
 
 
 def setup_logging():

@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from app.llms.llm_manager import LLMManager
-from app.exceptions import (
+from app.core.exceptions.llm_exceptions import (
     LLMRateLimitError,
     LLMTimeoutError,
     LLMServiceUnavailableError,

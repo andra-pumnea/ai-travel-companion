@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class BaseMemory(ABC):
+class BaseMemoryStore(ABC):
     """
     Base class for memory management.
     """
