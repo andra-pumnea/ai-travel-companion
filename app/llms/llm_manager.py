@@ -10,6 +10,7 @@ from app.core.exceptions.llm_exceptions import (
     LLMManagerError,
     LLMRateLimitError,
     LLMTimeoutError,
+    LLMRequestTooLargeError,
     LLMServiceUnavailableError,
     LLMGenerationError,
     LLMUnexpectedError,
@@ -95,7 +96,11 @@ class LLMManager:
                         f"Groq internal error {str(e)}. Retrying in {wait_time}s... (attempt {attempt + 1})"
                     )
                     time.sleep(wait_time)
-                except (LLMGenerationError, LLMUnexpectedError) as e:
+                except (
+                    LLMRequestTooLargeError,
+                    LLMGenerationError,
+                    LLMUnexpectedError,
+                ) as e:
                     logging.error(
                         f"Unrecoverable LLM error for model {model}: {str(e)}"
                     )

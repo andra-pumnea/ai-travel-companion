@@ -6,7 +6,7 @@ from app.data.storage.qdrant_client import QdrantClientWrapper
 from app.core.settings import QdrantConfig
 from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
 from app.llms.llm_manager import LLMManager
-from app.memory.local_memory import LocalMemory
+from app.memory.conversation_history.local_memory import LocalMemory
 from app.prompts.query_rewriting import QueryRewriting
 from app.prompts.question_answering import QuestionAnswering
 
@@ -42,6 +42,16 @@ class RetrievalPipeline:
             f"Retrieved {len(retrieved_docs)} documents for query: {user_query}"
         )
         return retrieved_docs
+
+    def get_all_journal_entries(self, user_trip_id: str) -> list[dict]:
+        """
+        Retrieves all journal entries for a given trip.
+        :param user_trip_id: The ID of the user's trip.
+        :return: A list of all journal entries."""
+        collection_name = f"{user_trip_id}_trip_collection"
+        all_docs = self.vector_store.get_all_documents(collection_name=collection_name)
+        logging.info(f"Retrieved {len(all_docs)} documents for trip ID: {user_trip_id}")
+        return all_docs
 
     def _rewrite_query(self, user_query: str, conversation_id: str) -> str:
         """

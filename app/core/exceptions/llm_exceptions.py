@@ -42,6 +42,14 @@ class LLMTimeoutError(LLMBaseError):
         self.message = message
 
 
+class LLMRequestTooLargeError(LLMBaseError):
+    """Raised when the LLM request exceeds the maximum allowed size."""
+
+    def __init__(self, message: str = "LLM request is too large"):
+        super().__init__(message)
+        self.message = message
+
+
 class LLMManagerError(BaseException):
     """Base class for all LLM manager-related errors."""
 

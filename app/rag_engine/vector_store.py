@@ -79,3 +79,17 @@ class VectorStore:
             logging.error(f"Error embedding query: {str(e)}")
             raise VectorStoreError(f"{str(e)}")
         return self.client.search(collection_name, embedding, limit)
+
+    def get_all_documents(self, collection_name: str):
+        """
+        Retrieves all documents from a specified collection in the vector store.
+        :param collection_name: Name of the collection to retrieve documents from.
+        :return: List of all documents in the collection.
+        """
+        try:
+            return self.client.get_all_documents(collection_name)
+        except Exception as e:
+            logging.error(
+                f"Error retrieving documents from collection '{collection_name}': {str(e)}"
+            )
+            raise e

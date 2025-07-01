@@ -2,7 +2,7 @@ import sys
 import uuid
 import logging
 
-from app.memory.local_memory import LocalMemory
+from app.memory.conversation_history.local_memory import LocalMemory
 from app.rag_engine.indexing_pipeline import IndexingPipeline
 from app.rag_engine.retrieval_pipeline import RetrievalPipeline
 from app.data.io.data_loader import (

@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from app.data.models.fact import FactDTO
+
 
 class SearchJournalRequest(BaseModel):
     user_query: str
@@ -33,3 +35,13 @@ class PlanTripRequest(BaseModel):
 class PlanTripResponse(BaseModel):
     answer: str
     thought_process: str
+
+
+class ExtractFactsRequest(BaseModel):
+    user_id: str
+    trip_id: str
+
+
+class ExtractFactsResponse(BaseModel):
+    thought_process: list[str]
+    extracted_facts: list[FactDTO]

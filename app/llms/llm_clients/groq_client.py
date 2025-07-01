@@ -3,6 +3,7 @@ from typing import Any, Type
 from httpx import HTTPStatusError, TimeoutException
 
 import instructor
+from instructor.exceptions import InstructorRetryException
 from pydantic import BaseModel
 from groq import Groq
 
@@ -11,6 +12,7 @@ from app.core.settings import GroqConfig
 from app.core.exceptions.llm_exceptions import (
     LLMTimeoutError,
     LLMRateLimitError,
+    LLMRequestTooLargeError,
     LLMServiceUnavailableError,
     LLMGenerationError,
     LLMUnexpectedError,
@@ -56,14 +58,16 @@ class GroqClient(BaseLLMClient):
         except TimeoutException as e:
             logging.error(f"Groq timeout: {e}")
             raise LLMTimeoutError
-        except HTTPStatusError as e:
-            status = e.response.status_code
-            logging.error(f"Groq HTTP error {status}: {e.response.text}")
+        except InstructorRetryException as e:
+            status = e.args[0].response.status_code
+            logging.error(f"Groq HTTP error {status}: {e.args[0].response.text}")
 
             if status == 429:
-                raise LLMRateLimitError("Rate limit exceeded")
+                raise LLMRateLimitError()
+            elif status == 413:
+                raise LLMRequestTooLargeError()
             elif status >= 500:
-                raise LLMServiceUnavailableError(f"LLM service unavailable: {str(e)}")
+                raise LLMServiceUnavailableError()
             elif status >= 400:
                 raise LLMGenerationError(f"LLM generation error: {str(e)}")
 

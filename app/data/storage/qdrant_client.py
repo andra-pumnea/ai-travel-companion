@@ -114,6 +114,41 @@ class QdrantClientWrapper(StorageBase):
         results_payload = [point.payload for point in results.points]
         return results_payload
 
+    def get_all_documents(self, collection_name: str, batch_size: int = 50):
+        """
+        Retrieve all documents from a specified collection.
+        :param collection_name: Name of the collection to retrieve documents from.
+        :return: List of all documents in the collection.
+        """
+        if not self.collection_exists(collection_name):
+            raise CollectionNotFoundError(collection_name)
+        try:
+            all_documents = []
+            next_offset = None
+
+            while True:
+                points, next_offset = self.client.scroll(
+                    collection_name=collection_name,
+                    with_payload=True,
+                    limit=batch_size,
+                    offset=next_offset,
+                )
+
+                if not points:
+                    break
+
+                all_documents.extend([point.payload for point in points])
+
+                if not next_offset:
+                    break
+
+            return all_documents
+        except Exception as e:
+            logging.error(
+                f"Error retrieving documents from collection '{collection_name}': {e}"
+            )
+            raise e
+
     @staticmethod
     def trip_step_to_point(dto: TripStepDTO, embedding: list[float]) -> PointStruct:
         """Convert a TripStepDTO to a PointStruct for Qdrant storage.

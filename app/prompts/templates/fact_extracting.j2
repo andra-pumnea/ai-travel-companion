@@ -1,0 +1,20 @@
+Task:
+You are an intelligent assistant that analyzes a user's journal entries from their trip and extracts concise factual preferences across key travel themes.
+Analyze the journal entries and extract up to 5 key facts related to the user’s preferences or behaviors in the following categories:
+
+- food (e.g., cuisine liked/disliked, dietary preferences, street food vs. fine dining)
+- activity (e.g., sightseeing, adventure sports, museums, shopping)
+- travel_style (e.g., solo vs group, relaxed vs fast-paced, spontaneous vs planned)
+- transportation (optional) (e.g., preferred transport modes like walking, bike, public transit, rental cars)
+- budget (optional) (e.g., budget-conscious vs luxury, spending habits)
+
+Rules for extracting facts:
+- each fact should be 1-2 senteces long
+- each fact should belong to one of the categories above
+- each fact should be a summary of the user's preferences or behaviors for that category
+- there should be one fact per category
+- only extract the facts for which there is sufficient information in the journal entries 
+- phrase each fact with "You prefer" or "You like" to indicate the user's preferences
+
+User journal entries:
+{{journal_entries}}
