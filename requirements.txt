@@ -8,3 +8,8 @@ fastapi
 uvicorn
 pytest
 pytest-asyncio
+sqlalchemy
+asyncpg
+greenlet # For SQLAlchemy async support
+alembic # For database migrations
+psycopg2-binary # For Alembic migrations

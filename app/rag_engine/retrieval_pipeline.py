@@ -106,7 +106,7 @@ class RetrievalPipeline:
         )
         return response
 
-    def run(
+    def search_with_generation(
         self, user_query: str, user_trip_id: str, limit: int = 5
     ) -> tuple[list[dict], Any]:
         """

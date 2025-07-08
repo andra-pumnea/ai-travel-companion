@@ -33,3 +33,17 @@ class APISettings(BaseSettings):
     project_name: str = "Travel Journal RAG Assistant API"
     project_description: str = "API for the Travel Journal RAG Assistant, providing endpoints to search travel journals."
     project_version: str = "1.0.0"
+
+
+class PostgressConfig(BaseSettings):
+    """Settings for PostgreSQL database connection."""
+
+    password: str = Field(os.getenv("POSTGRES_PASSWORD", "password"))
+    user: str = Field(os.getenv("POSTGRES_USER", "postgres"))
+    database: str = Field(os.getenv("POSTGRES_DB", "postgres"))
+    host: str = Field(os.getenv("POSTGRES_HOST", "localhost"))
+    port: int = Field(os.getenv("POSTGRES_PORT", 5432))
+
+    @property
+    def db_url(self) -> str:
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"

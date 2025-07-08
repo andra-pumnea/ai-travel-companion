@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.data.models.fact import FactDTO
+from app.data.dtos.fact import FactDTO
 
 
 class SearchJournalRequest(BaseModel):
@@ -40,6 +40,7 @@ class PlanTripResponse(BaseModel):
 class ExtractFactsRequest(BaseModel):
     user_id: str
     trip_id: str
+    limit: int = 5
 
 
 class ExtractFactsResponse(BaseModel):

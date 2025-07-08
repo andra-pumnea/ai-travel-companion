@@ -24,7 +24,7 @@ async def extract_facts(request: ExtractFactsRequest) -> ExtractFactsResponse:
 
     try:
         facts = await fact_service.extract_facts(
-            user_id=request.user_id, trip_id=request.trip_id
+            user_id=request.user_id, trip_id=request.trip_id, limit=request.limit
         )
     except LLMManagerError as e:
         logging.error(str(e))
@@ -33,7 +33,7 @@ async def extract_facts(request: ExtractFactsRequest) -> ExtractFactsResponse:
             detail=f"An error occurred while extracting facts: {str(e)}",
         )
     except Exception as e:
-        logging.error(f"Error extracting facts: {e}")
+        logging.error(f"Error extracting facts: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while extracting facts: {str(e)}",

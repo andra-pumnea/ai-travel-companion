@@ -1,8 +1,8 @@
 import logging
 
-from app.memory.long_term_memory.fact_manager import FactManager
+from app.memory.facts.fact_manager import FactManager
 from app.rag_engine.retrieval_pipeline import RetrievalPipeline
-from app.data.models.fact import FactDTO
+from app.data.dtos.fact import FactDTO
 
 
 class FactService:
@@ -15,7 +15,9 @@ class FactService:
         self.fact_manager = FactManager()
         self.retrieval_pipeline = RetrievalPipeline()
 
-    async def extract_facts(self, user_id: str, trip_id: str) -> list[FactDTO]:
+    async def extract_facts(
+        self, user_id: str, trip_id: str, limit: int = 5
+    ) -> list[FactDTO]:
         """
         Extracts facts from the provided travel journal entries.
         :param journal_entries: List of journal entries to extract facts from.
@@ -27,4 +29,8 @@ class FactService:
             logging.info("No journal entries provided for fact extraction.")
             return []
 
-        return self.fact_manager.extract_facts(journal_entries[:10])
+        facts = await self.fact_manager.extract_facts(user_id, journal_entries[:limit])
+        logging.info(
+            f"Extracted {len(facts.extracted_facts)} facts for user {user_id} and trip {trip_id}."
+        )
+        return facts

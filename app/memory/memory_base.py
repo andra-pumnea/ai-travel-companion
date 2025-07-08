@@ -19,10 +19,3 @@ class BaseMemoryStore(ABC):
         Retrieves data from the memory.
         """
         pass
-
-    @abstractmethod
-    def clear_memory(self):
-        """
-        Clears the memory.
-        """
-        pass

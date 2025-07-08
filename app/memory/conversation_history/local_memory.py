@@ -1,4 +1,4 @@
-from app.memory.memory_store_base import BaseMemoryStore
+from app.memory.memory_base import BaseMemoryStore
 
 
 class LocalMemory(BaseMemoryStore):
@@ -33,9 +33,3 @@ class LocalMemory(BaseMemoryStore):
         Retrieves data from the in-memory storage.
         """
         return self.storage.get(key)
-
-    def clear_memory(self):
-        """
-        Clears the in-memory storage.
-        """
-        self.storage.clear()

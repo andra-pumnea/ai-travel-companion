@@ -1,6 +1,6 @@
 import logging
 
-from app.data.storage.storage_base import StorageBase
+from app.data.storage.vector_store_base import VectoreStoreBase
 from app.embeddings.embedding_base import EmbeddingBase
 from app.core.exceptions.custom_exceptions import VectorStoreError
 
@@ -16,7 +16,7 @@ class VectorStore:
             cls._instance = super(VectorStore, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, client: StorageBase, embeddings: EmbeddingBase):
+    def __init__(self, client: VectoreStoreBase, embeddings: EmbeddingBase):
         if self.__class__._initialized:
             return  # Prevent re-initializing
 

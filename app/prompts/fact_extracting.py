@@ -2,7 +2,7 @@ from app.prompts.prompt_base import PromptBase
 from typing import Type
 from pydantic import BaseModel, Field
 
-from app.data.models.fact import FactDTO
+from app.data.dtos.fact import FactDTO
 
 
 class FactExtractingResponse(BaseModel):
@@ -27,7 +27,7 @@ class FactExtracting(PromptBase):
     prompt_name = "fact_extracting"
 
     @classmethod
-    def format(cls, journal_entries: str) -> str:
+    def format(cls, user_id: str, journal_entries: str) -> str:
         """
         Formats the prompt with the given conversation history and user query.
         :param conversation_history: The conversation history to include in the prompt.
@@ -36,6 +36,7 @@ class FactExtracting(PromptBase):
         """
         return cls.build_prompt(
             cls.prompt_name,
+            user_id=user_id,
             journal_entries=journal_entries,
         )
 

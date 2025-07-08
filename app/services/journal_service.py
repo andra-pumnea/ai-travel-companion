@@ -41,7 +41,7 @@ class JournalService:
         :return: A list of documents matching the query.
         """
         user_trip_id = f"{user_id}_{trip_id}"
-        answer, documents = self.retrieval_pipeline.run(
+        answer, documents = self.retrieval_pipeline.search_with_generation(
             user_query=user_query, user_trip_id=user_trip_id, limit=limit
         )
         if not documents:
