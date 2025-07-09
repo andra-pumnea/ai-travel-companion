@@ -3,7 +3,11 @@ import logging
 from fastapi import APIRouter, status, HTTPException
 
 from app.services.long_term_memory_service import FactService
-from app.server.api_models import ExtractFactsRequest, ExtractFactsResponse
+from app.server.api_models import (
+    ExtractFactsRequest,
+    ExtractFactsResponse,
+    GetAllFactsResponse,
+)
 from app.core.exceptions.llm_exceptions import LLMManagerError
 
 router = APIRouter()
@@ -42,4 +46,29 @@ async def extract_facts(request: ExtractFactsRequest) -> ExtractFactsResponse:
     return ExtractFactsResponse(
         thought_process=facts.thought_process,
         extracted_facts=facts.extracted_facts,
+    )
+
+
+@router.get(
+    "/user_facts/{user_id}",
+    response_model=GetAllFactsResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_all_facts(user_id: str) -> GetAllFactsResponse:
+    """
+    Endpoint to retrieve all facts for a user.
+    :param user_id: The ID of the user to retrieve facts for.
+    :return: GetAllFactsResponse containing the user's facts.
+    """
+    try:
+        facts = await fact_service.get_all_facts(user_id=user_id)
+    except Exception as e:
+        logging.error(f"Error retrieving facts: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while retrieving facts: {str(e)}",
+        )
+
+    return GetAllFactsResponse(
+        facts=facts,
     )

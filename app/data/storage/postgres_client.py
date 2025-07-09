@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.data.storage.relational_store_base import RelationalStoreBase
-from app.core.settings import PostgressConfig
+from app.core.settings import PostgresConfig
 from app.data.storage.db_models import UserFacts
 
 TABLE_MAPPING = {
@@ -18,8 +18,8 @@ class PostgresClientWrapper(RelationalStoreBase):
     Wrapper for PostgreSQL client to manage relational store operations.
     """
 
-    def __init__(self, config: PostgressConfig):
-        self._config = config
+    def __init__(self):
+        self._config = PostgresConfig()
         self.engine = create_async_engine(self._config.db_url)
         self.session = async_sessionmaker(
             bind=self.engine, class_=AsyncSession, expire_on_commit=False
@@ -39,8 +39,7 @@ class PostgresClientWrapper(RelationalStoreBase):
             result = await conn.execute(
                 query, {"schema": schema, "table_name": table_name}
             )
-            exists = await result.scalar()
-        return exists
+        return result.scalar()
 
     async def add_records(self, table_name: str, records: list[dict]) -> None:
         """
@@ -50,7 +49,8 @@ class PostgresClientWrapper(RelationalStoreBase):
         :return: None
         """
 
-        if not await self._table_exists(table_name):
+        table_exists = await self._table_exists(table_name)
+        if not table_exists:
             raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
 
         record_type = TABLE_MAPPING.get(table_name)
@@ -74,7 +74,8 @@ class PostgresClientWrapper(RelationalStoreBase):
         :param query_params: The parameters for the query.
         :return: A list of records that match the query.
         """
-        if not await self._table_exists(table_name):
+        table_exists = await self._table_exists(table_name)
+        if not table_exists:
             raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
 
         record_type = TABLE_MAPPING.get(table_name)
@@ -97,10 +98,23 @@ class PostgresClientWrapper(RelationalStoreBase):
                 logging.info(
                     f"Queried {len(records)} records from table '{table_name}'."
                 )
-                return [record.to_dict() for record in records]
+                return [self._model_to_dict(record) for record in records]
         except SQLAlchemyError as e:
             logging.error(f"Error querying table '{table_name}': {e}")
             raise e
         except Exception as e:
             logging.error(f"Unexpected error querying table '{table_name}': {e}")
             raise e
+
+    def _model_to_dict(self, db_model_instance: any) -> dict:
+        """
+        Convert a SQLAlchemy model instance to a dictionary.
+        :param db_model_instance: The SQLAlchemy model instance to convert.
+        :return: A dictionary representation of the model instance.
+        """
+        if db_model_instance is None:
+            return {}
+        return {
+            column.name: getattr(db_model_instance, column.name)
+            for column in db_model_instance.__table__.columns
+        }

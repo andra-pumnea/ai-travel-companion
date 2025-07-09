@@ -28,8 +28,22 @@ class FactStore(BaseMemoryStore):
         ]
         await self.storage_client.add_records(TABLE_NAME, records=fact_data)
 
-    def get_data(self, key: str) -> any:
+    async def get_data(self, user_id: str) -> list[FactDTO]:
         """
         Retrieves data from the memory.
+        :param user_id: The ID of the user to retrieve facts for.
+        :return: A list of FactDTOs containing the user's facts.
         """
-        return self.storage_client.get(key)
+        query_params = {"user_id": user_id}
+        results = await self.storage_client.query(
+            table_name=TABLE_NAME, query_params=query_params
+        )
+        facts = [
+            FactDTO(
+                user_id=result["user_id"],
+                fact_text=result["fact"],
+                category=result["category"],
+            )
+            for result in results
+        ]
+        return facts

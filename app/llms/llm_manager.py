@@ -69,9 +69,15 @@ class LLMManager:
 
         for model in self.settings.model:
             logging.info(f"Attempting to call model: {model}")
+            start_time = time.time()
             for attempt in range(max_retries):
                 try:
-                    return self.generate_response(model, **kwargs)
+                    result = self.generate_response(model, **kwargs)
+                    total_elapsed = time.time() - start_time
+                    logging.info(
+                        f"Model {model} succeeded in {total_elapsed:.2f}s (attempt {attempt + 1})"
+                    )
+                    return result
                 except LLMRateLimitError:
                     wait_time = LLMManager.calculate_backoff_time(
                         retry_backoff_base, attempt, jitter_factor
@@ -105,7 +111,10 @@ class LLMManager:
                         f"Unrecoverable LLM error for model {model}: {str(e)}"
                     )
                     break
-            logging.info(f"Model {model} exhausted retries. Trying next...")
+            total_elapsed = time.time() - start_time
+            logging.info(
+                f"Model {model} exhausted retries in {total_elapsed}s. Trying next..."
+            )
         raise LLMManagerError("All fallback models failed.")
 
     @staticmethod

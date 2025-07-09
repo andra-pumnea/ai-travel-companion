@@ -4,7 +4,6 @@ from app.data.dtos.fact import FactDTO
 from app.prompts.fact_extracting import FactExtracting
 from app.llms.llm_manager import LLMManager
 from app.data.storage.postgres_client import PostgresClientWrapper
-from app.core.settings import PostgressConfig
 from app.memory.facts.fact_store import FactStore
 
 
@@ -15,9 +14,7 @@ class FactManager:
 
     def __init__(self):
         self.llm_manager = LLMManager()
-        self.fact_store = FactStore(
-            storage_client=PostgresClientWrapper(PostgressConfig())
-        )
+        self.fact_store = FactStore(storage_client=PostgresClientWrapper())
 
     async def extract_facts(
         self, user_id: str, journal_entries: list[dict]

@@ -35,15 +35,16 @@ class APISettings(BaseSettings):
     project_version: str = "1.0.0"
 
 
-class PostgressConfig(BaseSettings):
+class PostgresConfig(BaseSettings):
     """Settings for PostgreSQL database connection."""
 
     password: str = Field(os.getenv("POSTGRES_PASSWORD", "password"))
-    user: str = Field(os.getenv("POSTGRES_USER", "postgres"))
+    user_name: str = Field(os.getenv("POSTGRES_USER", "postgres"))
     database: str = Field(os.getenv("POSTGRES_DB", "postgres"))
     host: str = Field(os.getenv("POSTGRES_HOST", "localhost"))
     port: int = Field(os.getenv("POSTGRES_PORT", 5432))
+    test: str = Field("test")
 
     @property
     def db_url(self) -> str:
-        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql+asyncpg://{self.user_name}:{self.password}@{self.host}:{self.port}/{self.database}"

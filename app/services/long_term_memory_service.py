@@ -34,3 +34,17 @@ class FactService:
             f"Extracted {len(facts.extracted_facts)} facts for user {user_id} and trip {trip_id}."
         )
         return facts
+
+    async def get_all_facts(self, user_id: str) -> list[FactDTO]:
+        """
+        Retrieves all facts for a user.
+        :param user_id: The ID of the user to retrieve facts for.
+        :return: A list of FactDTOs containing the user's facts.
+        """
+        facts = await self.fact_manager.fact_store.get_data(user_id)
+        if not facts:
+            logging.info(f"No facts found for user {user_id}.")
+            return []
+
+        logging.info(f"Retrieved {len(facts)} facts for user {user_id}.")
+        return facts
