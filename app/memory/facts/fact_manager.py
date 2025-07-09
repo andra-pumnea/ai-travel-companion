@@ -1,6 +1,7 @@
 import logging
 
 from app.data.dtos.fact import FactDTO
+from app.core.settings import PostgresConfig
 from app.prompts.fact_extracting import FactExtracting
 from app.llms.llm_manager import LLMManager
 from app.data.storage.postgres_client import PostgresClientWrapper
@@ -16,7 +17,9 @@ class FactManager:
     def __init__(self):
         self.llm_manager = LLMManager()
         self.retrieval_pipeline = RetrievalPipeline()
-        self.fact_store = FactStore(storage_client=PostgresClientWrapper())
+        self.fact_store = FactStore(
+            storage_client=PostgresClientWrapper(PostgresConfig())
+        )
 
     async def extract_facts(
         self,

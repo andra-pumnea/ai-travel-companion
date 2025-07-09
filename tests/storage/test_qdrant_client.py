@@ -15,7 +15,7 @@ from app.core.exceptions.custom_exceptions import (
 class TestQdrantClient:
     @pytest.fixture(autouse=True)
     def setup_qdrant_client(self):
-        config = QdrantConfig(qdrant_url="http://localhost:6333")
+        config = QdrantConfig()
         self.wrapper = QdrantClientWrapper(config)
         self.wrapper.client = MagicMock()
 

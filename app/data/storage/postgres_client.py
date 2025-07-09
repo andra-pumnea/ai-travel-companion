@@ -9,18 +9,18 @@ from app.data.storage.relational_store_base import RelationalStoreBase
 from app.core.settings import PostgresConfig
 from app.data.storage.db_models import UserFacts
 
-TABLE_MAPPING = {
-    "user_facts": UserFacts,
-}
-
 
 class PostgresClientWrapper(RelationalStoreBase):
     """
     Wrapper for PostgreSQL client to manage relational store operations.
     """
 
-    def __init__(self):
-        self._config = PostgresConfig()
+    _TABLE_MAPPING = {
+        "user_facts": UserFacts,
+    }
+
+    def __init__(self, config: PostgresConfig):
+        self._config = config
         self.engine = create_async_engine(self._config.db_url)
         self.session = async_sessionmaker(
             bind=self.engine, class_=AsyncSession, expire_on_commit=False
@@ -54,7 +54,7 @@ class PostgresClientWrapper(RelationalStoreBase):
         if not table_exists:
             raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
 
-        record_type = TABLE_MAPPING.get(table_name)
+        record_type = self._TABLE_MAPPING.get(table_name)
         if record_type is None:
             raise ValueError(f"No mapped model found for table '{table_name}'.")
 
@@ -78,7 +78,7 @@ class PostgresClientWrapper(RelationalStoreBase):
         if not table_exists:
             raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
 
-        record_type = TABLE_MAPPING.get(table_name)
+        record_type = self._TABLE_MAPPING.get(table_name)
         if record_type is None:
             raise ValueError(f"No mapped model found for table '{table_name}'.")
 
@@ -121,7 +121,7 @@ class PostgresClientWrapper(RelationalStoreBase):
         if not table_exists:
             raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
 
-        record_type = TABLE_MAPPING.get(table_name)
+        record_type = self._TABLE_MAPPING.get(table_name)
         if record_type is None:
             raise ValueError(f"No mapped model found for table '{table_name}'.")
 
