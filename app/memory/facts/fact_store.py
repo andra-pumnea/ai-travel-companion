@@ -1,3 +1,5 @@
+import logging
+
 from app.memory.memory_base import BaseMemoryStore
 from app.data.storage.relational_store_base import RelationalStoreBase
 from app.data.dtos.fact import FactDTO
@@ -17,6 +19,7 @@ class FactStore(BaseMemoryStore):
     async def add_data(self, facts: list[FactDTO]):
         """
         Adds data to the memory.
+        :param facts: List of FactDTOs to add.
         """
         fact_data = [
             {
@@ -26,7 +29,7 @@ class FactStore(BaseMemoryStore):
             }
             for fact in facts
         ]
-        await self.storage_client.add_records(TABLE_NAME, records=fact_data)
+        await self.storage_client.upsert_records(TABLE_NAME, records=fact_data)
 
     async def get_data(self, user_id: str) -> list[FactDTO]:
         """
@@ -47,3 +50,29 @@ class FactStore(BaseMemoryStore):
             for result in results
         ]
         return facts
+
+    async def update_data(self, facts: list[FactDTO]):
+        """
+        Updates existing facts in the memory.
+        :param facts: List of FactDTOs to update.
+        """
+        for fact in facts:
+            query_params = {"category": fact.category}
+            results = await self.storage_client.query(
+                table_name=TABLE_NAME, query_params=query_params
+            )
+            if not results:
+                logging.info(
+                    f"No existing fact found for category '{fact.category}'. Adding new fact."
+                )
+                await self.add_data([fact])
+
+        fact_data = [
+            {
+                "user_id": fact.user_id,
+                "fact": fact.fact_text,
+                "category": fact.category,
+            }
+            for fact in facts
+        ]
+        await self.storage_client.update_records(TABLE_NAME, records=fact_data)

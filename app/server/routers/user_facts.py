@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, status, HTTPException
 
-from app.services.long_term_memory_service import FactService
+from app.services.facts_service import FactService
 from app.server.api_models import (
     ExtractFactsRequest,
     ExtractFactsResponse,

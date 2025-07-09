@@ -18,6 +18,16 @@ class RelationalStoreBase(ABC):
         pass
 
     @abstractmethod
+    def upsert_records(self, table_name: str, records: list[dict]) -> None:
+        """
+        Upsert records into the storage.
+
+        :param table_name: The name of the table to upsert records into.
+        :param records: The records to upsert.
+        """
+        pass
+
+    @abstractmethod
     def query(self, table_name: str, query_params: dict) -> list:
         """
         Query records from the storage.

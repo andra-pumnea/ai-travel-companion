@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from app.core.settings import APISettings
-from app.server.routers import journal, planner, long_term_memory
+from app.server.routers import journal, planner, user_facts
 
 
 def setup_logging():
@@ -34,9 +34,9 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(
-        long_term_memory.router,
-        prefix="/long_term_memory",
-        tags=["Long Term Memory"],
+        user_facts.router,
+        prefix="/user_facts",
+        tags=["User Facts"],
     )
 
     return app

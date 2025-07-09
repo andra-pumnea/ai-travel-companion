@@ -3,6 +3,7 @@ import logging
 from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.dialects.postgresql import insert
 
 from app.data.storage.relational_store_base import RelationalStoreBase
 from app.core.settings import PostgresConfig
@@ -66,6 +67,48 @@ class PostgresClientWrapper(RelationalStoreBase):
         except Exception as e:
             logging.error(f"Error adding records to table '{table_name}': {e}")
             raise e
+
+    async def upsert_records(self, table_name: str, records: list[dict]) -> None:
+        """
+        Upsert records into the storage.
+        :param table_name: The name of the table to upsert records into.
+        :param records: The records to upsert.
+        """
+        table_exists = await self._table_exists(table_name)
+        if not table_exists:
+            raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
+
+        record_type = TABLE_MAPPING.get(table_name)
+        if record_type is None:
+            raise ValueError(f"No mapped model found for table '{table_name}'.")
+
+        conflict_keys = record_type.get_upsert_conflict_target()
+        update_fields = record_type.get_upsert_update_fields()
+
+        if not conflict_keys or not update_fields:
+            raise ValueError(
+                f"Model '{record_type.__name__}' is missing upsert metadata."
+            )
+
+        try:
+            async with self.session() as session:
+                async with session.begin():
+                    for record in records:
+                        insert_query = insert(record_type).values(**record)
+                        update_dict = {
+                            field: getattr(insert_query.excluded, field)
+                            for field in update_fields
+                        }
+                        stmt = insert_query.on_conflict_do_update(
+                            index_elements=conflict_keys,
+                            set_=update_dict,
+                        )
+                        await session.execute(stmt)
+
+            logging.info(f"Upserted {len(records)} records into '{table_name}'.")
+        except Exception as e:
+            logging.error(f"Error upserting records into '{table_name}': {e}")
+            raise
 
     async def query(self, table_name: str, query_params: dict) -> list[dict]:
         """
