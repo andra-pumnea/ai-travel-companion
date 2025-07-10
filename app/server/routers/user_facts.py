@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 
 from app.services.facts_service import FactService
 from app.server.api_models import (
@@ -9,9 +9,9 @@ from app.server.api_models import (
     GetAllFactsResponse,
 )
 from app.core.exceptions.llm_exceptions import LLMManagerError
+from app.server.dependencies import get_fact_service
 
 router = APIRouter()
-fact_service = FactService()
 
 
 @router.post(
@@ -19,7 +19,9 @@ fact_service = FactService()
     response_model=ExtractFactsResponse,
     status_code=status.HTTP_200_OK,
 )
-async def extract_facts(request: ExtractFactsRequest) -> ExtractFactsResponse:
+async def extract_facts(
+    request: ExtractFactsRequest, fact_service: FactService = Depends(get_fact_service)
+) -> ExtractFactsResponse:
     """
     Endpoint to extract facts from the user's travel journal.
     :param request: ExtractFactsRequest containing user ID, trip ID, and limit.
@@ -44,17 +46,18 @@ async def extract_facts(request: ExtractFactsRequest) -> ExtractFactsResponse:
         )
 
     return ExtractFactsResponse(
-        thought_process=facts.thought_process,
-        extracted_facts=facts.extracted_facts,
+        extracted_facts=facts,
     )
 
 
 @router.get(
-    "/user_facts/{user_id}",
+    "/{user_id}",
     response_model=GetAllFactsResponse,
     status_code=status.HTTP_200_OK,
 )
-async def get_all_facts(user_id: str) -> GetAllFactsResponse:
+async def get_all_user_facts(
+    user_id: str, fact_service: FactService = Depends(get_fact_service)
+) -> GetAllFactsResponse:
     """
     Endpoint to retrieve all facts for a user.
     :param user_id: The ID of the user to retrieve facts for.

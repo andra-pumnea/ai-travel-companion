@@ -14,12 +14,10 @@ class FactManager:
     Class to manage the extraction and update of facts from travel journal entries.
     """
 
-    def __init__(self):
+    def __init__(self, fact_store: FactStore):
         self.llm_manager = LLMManager()
         self.retrieval_pipeline = RetrievalPipeline()
-        self.fact_store = FactStore(
-            storage_client=PostgresClientWrapper(PostgresConfig())
-        )
+        self.fact_store = fact_store
 
     async def extract_facts(
         self,
@@ -77,4 +75,4 @@ class FactManager:
 
         await self.fact_store.add_data(response.extracted_facts)
 
-        return response
+        return response.extracted_facts

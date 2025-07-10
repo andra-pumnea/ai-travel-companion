@@ -1,5 +1,3 @@
-import logging
-
 from app.memory.memory_base import BaseMemoryStore
 from app.data.storage.relational_store_base import RelationalStoreBase
 from app.data.dtos.fact import FactDTO

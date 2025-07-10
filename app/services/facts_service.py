@@ -10,8 +10,8 @@ class FactService:
     This class is responsible for extracting facts from the user's travel journal.
     """
 
-    def __init__(self):
-        self.fact_manager = FactManager()
+    def __init__(self, fact_manager: FactManager):
+        self.fact_manager = fact_manager
 
     async def extract_facts(
         self, user_id: str, trip_id: str, limit: int = 5
@@ -25,7 +25,7 @@ class FactService:
         """
         facts = await self.fact_manager.extract_facts(user_id, trip_id, limit)
         logging.info(
-            f"Extracted {len(facts.extracted_facts)} facts for user {user_id} and trip {trip_id}."
+            f"Extracted {len(facts)} facts for user {user_id} and trip {trip_id}."
         )
         return facts
 

@@ -44,7 +44,6 @@ class ExtractFactsRequest(BaseModel):
 
 
 class ExtractFactsResponse(BaseModel):
-    thought_process: list[str]
     extracted_facts: list[FactDTO]
 
 
