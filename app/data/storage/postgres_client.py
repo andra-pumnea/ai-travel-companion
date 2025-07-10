@@ -1,8 +1,8 @@
 import logging
 
-from sqlalchemy import select, text
+from sqlalchemy import select, inspect
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.dialects.postgresql import insert
 
 from app.data.storage.relational_store_base import RelationalStoreBase
@@ -22,25 +22,60 @@ class PostgresClientWrapper(RelationalStoreBase):
     def __init__(self, config: PostgresConfig):
         self._config = config
         self.engine = create_async_engine(self._config.db_url)
-        self.session = async_sessionmaker(
-            bind=self.engine, class_=AsyncSession, expire_on_commit=False
-        )
+        self.session = async_sessionmaker(self.engine, expire_on_commit=False)
 
-    async def _table_exists(self, table_name: str, schema: str = "public") -> bool:
-        query = text(
-            """
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = :schema 
-                AND table_name = :table_name
-            );
-            """
-        )
+    async def _table_exists(self, table_name: str) -> bool:
+        """
+        Check if a table exists in the database.
+        :param table_name: The name of the table to check.
+        :return: True if the table exists, False otherwise."""
+
         async with self.engine.connect() as conn:
-            result = await conn.execute(
-                query, {"schema": schema, "table_name": table_name}
+            return await conn.run_sync(
+                lambda sync_conn: table_name in inspect(sync_conn).get_table_names()
             )
-        return result.scalar()
+
+    async def _get_record_type(self, table_name: str) -> any:
+        """Check table exists and get record type or raise.
+        :param table_name: The name of the table to check.
+        :return: The SQLAlchemy model class for the table.
+        """
+        table_exists = await self._table_exists(table_name)
+        if not table_exists:
+            raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
+
+        record_type = self._TABLE_MAPPING.get(table_name)
+        if record_type is None:
+            raise ValueError(f"No mapped model found for table '{table_name}'.")
+        return record_type
+
+    async def _execute_db_operation(
+        self, records: list[dict], table_name: str, operation_func: callable
+    ) -> None:
+        """
+        Helper method to execute DB operations within a transaction.
+        :param records: List of record dicts to operate on.
+        :param table_name: Name of the target table.
+        :param operation_func: Coroutine function accepting (session, record_type, records).
+        """
+        record_type = await self._get_record_type(table_name)
+        try:
+            async with self.session() as session:
+                async with session.begin():
+                    await operation_func(session, record_type, records)
+            logging.info(
+                f"Operation {operation_func.__name__} completed on {len(records)} records in '{table_name}'."
+            )
+        except SQLAlchemyError as e:
+            logging.error(
+                f"Database error during operation {operation_func.__name__} on '{table_name}': {e}"
+            )
+            raise e
+        except Exception as e:
+            logging.error(
+                f"Unhandled error during operation {operation_func.__name__} on '{table_name}': {e}"
+            )
+            raise e
 
     async def add_records(self, table_name: str, records: list[dict]) -> None:
         """
@@ -50,23 +85,11 @@ class PostgresClientWrapper(RelationalStoreBase):
         :return: None
         """
 
-        table_exists = await self._table_exists(table_name)
-        if not table_exists:
-            raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
+        async def inner_add_operation(session, record_type, records):
+            new_records = [record_type(**data) for data in records]
+            session.add_all(new_records)
 
-        record_type = self._TABLE_MAPPING.get(table_name)
-        if record_type is None:
-            raise ValueError(f"No mapped model found for table '{table_name}'.")
-
-        try:
-            async with self.session() as session:
-                async with session.begin():
-                    new_records = [record_type(**data) for data in records]
-                    session.add_all(new_records)
-                logging.info(f"Added {len(records)} records to table '{table_name}'.")
-        except Exception as e:
-            logging.error(f"Error adding records to table '{table_name}': {e}")
-            raise e
+        await self._execute_db_operation(records, table_name, inner_add_operation)
 
     async def upsert_records(self, table_name: str, records: list[dict]) -> None:
         """
@@ -74,41 +97,28 @@ class PostgresClientWrapper(RelationalStoreBase):
         :param table_name: The name of the table to upsert records into.
         :param records: The records to upsert.
         """
-        table_exists = await self._table_exists(table_name)
-        if not table_exists:
-            raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
 
-        record_type = self._TABLE_MAPPING.get(table_name)
-        if record_type is None:
-            raise ValueError(f"No mapped model found for table '{table_name}'.")
+        async def inner_upsert_operation(session, record_type, records):
+            conflict_keys = record_type.get_upsert_conflict_target()
+            update_fields = record_type.get_upsert_update_fields()
+            if not conflict_keys or not update_fields:
+                raise ValueError(
+                    f"Model '{record_type.__name__}' is missing upsert metadata."
+                )
 
-        conflict_keys = record_type.get_upsert_conflict_target()
-        update_fields = record_type.get_upsert_update_fields()
+            for record in records:
+                insert_query = insert(record_type).values(**record)
+                update_dict = {
+                    field: getattr(insert_query.excluded, field)
+                    for field in update_fields
+                }
+                stmt = insert_query.on_conflict_do_update(
+                    index_elements=conflict_keys,
+                    set_=update_dict,
+                )
+                await session.execute(stmt)
 
-        if not conflict_keys or not update_fields:
-            raise ValueError(
-                f"Model '{record_type.__name__}' is missing upsert metadata."
-            )
-
-        try:
-            async with self.session() as session:
-                async with session.begin():
-                    for record in records:
-                        insert_query = insert(record_type).values(**record)
-                        update_dict = {
-                            field: getattr(insert_query.excluded, field)
-                            for field in update_fields
-                        }
-                        stmt = insert_query.on_conflict_do_update(
-                            index_elements=conflict_keys,
-                            set_=update_dict,
-                        )
-                        await session.execute(stmt)
-
-            logging.info(f"Upserted {len(records)} records into '{table_name}'.")
-        except Exception as e:
-            logging.error(f"Error upserting records into '{table_name}': {e}")
-            raise
+        await self._execute_db_operation(records, table_name, inner_upsert_operation)
 
     async def query(self, table_name: str, query_params: dict) -> list[dict]:
         """
@@ -117,13 +127,7 @@ class PostgresClientWrapper(RelationalStoreBase):
         :param query_params: The parameters for the query.
         :return: A list of records that match the query.
         """
-        table_exists = await self._table_exists(table_name)
-        if not table_exists:
-            raise ValueError(f"Table '{table_name}' does not exist in the mapping.")
-
-        record_type = self._TABLE_MAPPING.get(table_name)
-        if record_type is None:
-            raise ValueError(f"No mapped model found for table '{table_name}'.")
+        record_type = await self._get_record_type(table_name)
 
         try:
             async with self.session() as session:
@@ -141,7 +145,9 @@ class PostgresClientWrapper(RelationalStoreBase):
                 logging.info(
                     f"Queried {len(records)} records from table '{table_name}'."
                 )
-                return [self._model_to_dict(record) for record in records]
+                return [
+                    PostgresClientWrapper._model_to_dict(record) for record in records
+                ]
         except SQLAlchemyError as e:
             logging.error(f"Error querying table '{table_name}': {e}")
             raise e
@@ -149,7 +155,8 @@ class PostgresClientWrapper(RelationalStoreBase):
             logging.error(f"Unexpected error querying table '{table_name}': {e}")
             raise e
 
-    def _model_to_dict(self, db_model_instance: any) -> dict:
+    @staticmethod
+    def _model_to_dict(db_model_instance: any) -> dict:
         """
         Convert a SQLAlchemy model instance to a dictionary.
         :param db_model_instance: The SQLAlchemy model instance to convert.
