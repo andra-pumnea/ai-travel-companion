@@ -5,7 +5,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from qdrant_client.models import PointStruct
 
-from app.data.storage.vector_store_base import VectoreStoreBase
+from app.data.storage.vector_store_base import VectorStoreBase
 from app.data.dtos.trip import TripStepDTO
 from app.core.exceptions.custom_exceptions import (
     QdrantClientError,
@@ -13,7 +13,7 @@ from app.core.exceptions.custom_exceptions import (
 )
 
 
-class QdrantClientWrapper(VectoreStoreBase):
+class QdrantClientWrapper(VectorStoreBase):
     """Wrapper for Qdrant client to manage vector store operations."""
 
     def __init__(self, config: QdrantConfig):

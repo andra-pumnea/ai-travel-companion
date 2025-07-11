@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.server.api_models import (
     SearchJournalRequest,
@@ -9,16 +9,19 @@ from app.server.api_models import (
 from app.services.journal_service import JournalService
 from app.core.exceptions.custom_exceptions import CollectionNotFoundError
 from app.core.exceptions.llm_exceptions import LLMManagerError
+from app.server.dependencies import get_journal_service
 
 
 router = APIRouter()
-journal_service = JournalService()
 
 
 @router.post(
     "/search", response_model=SearchJournalResponse, status_code=status.HTTP_200_OK
 )
-async def search_journal(request: SearchJournalRequest) -> SearchJournalResponse:
+async def search_journal(
+    request: SearchJournalRequest,
+    journal_service: JournalService = Depends(get_journal_service),
+) -> SearchJournalResponse:
     """
     Endpoint to search the travel journal based on user query, user ID, and trip ID.
     :param request: SearchJournalRequest containing user query, user ID, trip ID, and limit.
@@ -52,6 +55,7 @@ async def search_journal(request: SearchJournalRequest) -> SearchJournalResponse
 )
 async def search_journal_with_generation(
     request: SearchJournalWithGenerationRequest,
+    journal_service: JournalService = Depends(get_journal_service),
 ) -> SearchJournalWithGenerationResponse:
     """
     Endpoint to search the travel journal using RAG.

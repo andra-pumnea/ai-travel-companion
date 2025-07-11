@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class VectoreStoreBase(ABC):
+class VectorStoreBase(ABC):
     """
     Base class for storage clients.
     """

@@ -1,10 +1,8 @@
 import logging
 
 from app.data.dtos.fact import FactDTO
-from app.core.settings import PostgresConfig
 from app.prompts.fact_extracting import FactExtracting
 from app.llms.llm_manager import LLMManager
-from app.data.storage.postgres_client import PostgresClientWrapper
 from app.memory.facts.fact_store import FactStore
 from app.rag_engine.retrieval_pipeline import RetrievalPipeline
 
@@ -14,10 +12,10 @@ class FactManager:
     Class to manage the extraction and update of facts from travel journal entries.
     """
 
-    def __init__(self, fact_store: FactStore):
-        self.llm_manager = LLMManager()
-        self.retrieval_pipeline = RetrievalPipeline()
+    def __init__(self, fact_store: FactStore, retrieval_pipeline: RetrievalPipeline):
         self.fact_store = fact_store
+        self.retrieval_pipeline = retrieval_pipeline
+        self.llm_manager = LLMManager()
 
     async def extract_facts(
         self,

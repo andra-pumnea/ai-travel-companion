@@ -1,10 +1,7 @@
 import logging
 from typing import Any
 
-from app.rag_engine.vector_store import VectorStore
-from app.data.storage.qdrant_client import QdrantClientWrapper
-from app.core.settings import QdrantConfig
-from app.embeddings.huggingface_embeddings import HuggingFaceEmbeddings
+from app.data.storage.vector_store_base import VectorStoreBase
 from app.llms.llm_manager import LLMManager
 from app.memory.conversation_history.local_memory import LocalMemory
 from app.prompts.query_rewriting import QueryRewriting
@@ -12,10 +9,8 @@ from app.prompts.question_answering import QuestionAnswering
 
 
 class RetrievalPipeline:
-    def __init__(self):
-        self.storage_client = QdrantClientWrapper(QdrantConfig())
-        self.embeddings = HuggingFaceEmbeddings()
-        self.vector_store = VectorStore(self.storage_client, self.embeddings)
+    def __init__(self, vector_store: VectorStoreBase):
+        self.vector_store = vector_store
         self.llm_manager = LLMManager()
         self.memory = LocalMemory()
 

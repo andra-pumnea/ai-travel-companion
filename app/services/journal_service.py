@@ -4,8 +4,8 @@ from app.rag_engine.retrieval_pipeline import RetrievalPipeline
 
 
 class JournalService:
-    def __init__(self):
-        self.retrieval_pipeline = RetrievalPipeline()
+    def __init__(self, retrieval_pipeline: RetrievalPipeline):
+        self.retrieval_pipeline = retrieval_pipeline
 
     async def search_journal(
         self, user_query: str, user_id: str, trip_id: str, limit: int = 5
