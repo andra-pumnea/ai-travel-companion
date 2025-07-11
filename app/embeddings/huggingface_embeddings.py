@@ -1,3 +1,5 @@
+import logging
+
 from typing import Union
 from sentence_transformers import SentenceTransformer
 
@@ -9,8 +11,19 @@ class HuggingFaceEmbeddings(EmbeddingBase):
     Class for Hugging Face embeddings.
     """
 
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, model_name: str = "sentence-transformers/all-mpnet-base-v2"):
-        self.model = SentenceTransformer(model_name)
+        if not self._initialized:
+            self.model = SentenceTransformer(model_name)
+            self._initialized = True
+            logging.info(f"HuggingFaceEmbeddings initialized with model: {model_name}")
 
     def embed(self, text: Union[str, list[str]]) -> list[list[float]]:
         """

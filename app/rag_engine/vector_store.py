@@ -15,18 +15,15 @@ class VectorStore:
     _initialized = False
 
     def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(VectorStore, cls).__new__(cls)
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, client: VectorStoreBase, embeddings: EmbeddingBase):
-        if self.__class__._initialized:
-            return  # Prevent re-initializing
-
-        self.client = client
-        self.embeddings = embeddings
-
-        self.__class__._initialized = True  # Mark as initialized
+        if not self._initialized:
+            self.client = client
+            self.embeddings = embeddings
+            self._initialized = True
 
     def prepare_data(self, documents: list[TripStepDTO]) -> list[PointStruct]:
         """

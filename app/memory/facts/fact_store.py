@@ -1,3 +1,4 @@
+
 from app.data.storage.relational_store_base import RelationalStoreBase
 from app.data.dtos.fact import FactDTO
 
@@ -10,8 +11,18 @@ class FactStore:
     It implements the BaseMemoryStore interface.
     """
 
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, storage_client: RelationalStoreBase):
-        self.storage_client = storage_client
+        if not self._initialized:
+            self.storage_client = storage_client
+            self._initialized = True
 
     async def add_data(self, facts: list[FactDTO]):
         """

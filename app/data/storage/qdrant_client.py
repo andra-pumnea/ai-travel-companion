@@ -16,8 +16,19 @@ from app.core.exceptions.custom_exceptions import (
 class QdrantClientWrapper(VectorStoreBase):
     """Wrapper for Qdrant client to manage vector store operations."""
 
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, config: QdrantConfig):
-        self.client = QdrantClient(url=config.qdrant_url)
+        if not self._initialized:
+            self.client = QdrantClient(url=config.qdrant_url)
+            self._initialized = True
+            logging.info(f"QdrantClient initialized with URL: {config.qdrant_url}")
 
     def collection_exists(self, collection_name: str) -> bool:
         """

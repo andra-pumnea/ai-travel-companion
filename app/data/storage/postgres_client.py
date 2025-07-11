@@ -24,6 +24,8 @@ class PostgresClientWrapper(RelationalStoreBase):
         self._config = config
         self.engine = create_async_engine(self._config.db_url)
         self.session = async_sessionmaker(self.engine, expire_on_commit=False)
+        self._initialized = True
+        logging.info("PostgresClientWrapper initialized.")
 
     async def _table_exists(self, table_name: str) -> bool:
         """

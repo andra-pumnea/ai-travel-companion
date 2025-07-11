@@ -9,10 +9,20 @@ from app.prompts.question_answering import QuestionAnswering
 
 
 class RetrievalPipeline:
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, vector_store: VectorStore):
-        self.vector_store = vector_store
-        self.llm_manager = LLMManager()
-        self.memory = LocalMemory()
+        if not self._initialized:
+            self.vector_store = vector_store
+            self.llm_manager = LLMManager()
+            self.memory = LocalMemory()
+            self._initialized = True
 
     @staticmethod
     def _log_token_usage(prompt_name: str, prompt: str) -> None:

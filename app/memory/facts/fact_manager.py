@@ -12,10 +12,20 @@ class FactManager:
     Class to manage the extraction and update of facts from travel journal entries.
     """
 
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, fact_store: FactStore, retrieval_pipeline: RetrievalPipeline):
-        self.fact_store = fact_store
-        self.retrieval_pipeline = retrieval_pipeline
-        self.llm_manager = LLMManager()
+        if not self._initialized:
+            self.fact_store = fact_store
+            self.retrieval_pipeline = retrieval_pipeline
+            self.llm_manager = LLMManager()
+            self._initialized = True
 
     async def extract_facts(
         self,
