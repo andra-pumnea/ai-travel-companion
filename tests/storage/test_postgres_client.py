@@ -116,15 +116,15 @@ class TestPostgresClientWrapper:
         record_type.assert_called_once_with(**records[0])
 
     async def test_add_invalid_records_exception(self):
-        self.wrapper = PostgresClientWrapper(PostgresConfig())
-        self.wrapper._TABLE_MAPPING = {"user_facts": UserFacts}
+        table_name = "test_table"
+        self.wrapper._TABLE_MAPPING = {table_name: UserFacts}
 
         self.wrapper._table_exists = AsyncMock(return_value=True)
 
-        bad_data = [{"user_id": 123}]
+        bad_data = [{"test": 123}]
 
-        with pytest.raises(SQLAlchemyError):
-            await self.wrapper.add_records("user_facts", bad_data)
+        with pytest.raises(TypeError):
+            await self.wrapper.add_records(table_name, bad_data)
 
     async def test_upsert_records_success(self):
         table_name = "test_table"

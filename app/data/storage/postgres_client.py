@@ -72,6 +72,11 @@ class PostgresClientWrapper(RelationalStoreBase):
                 f"Database error during operation {operation_func.__name__} on '{table_name}': {e}"
             )
             raise e
+        except TypeError as e:
+            logging.error(
+                f"Type error during operation {operation_func.__name__} on '{table_name}': {e}"
+            )
+            raise e
         except Exception as e:
             logging.error(
                 f"Unhandled error during operation {operation_func.__name__} on '{table_name}': {e}"
