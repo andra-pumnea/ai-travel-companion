@@ -27,12 +27,12 @@ def get_vector_store_client() -> VectorStoreBase:
 def get_vector_store(
     storage_client: VectorStoreBase = Depends(get_vector_store_client),
     embeddings: EmbeddingBase = Depends(get_embeddings),
-) -> VectorStoreBase:
+) -> VectorStore:
     return VectorStore(storage_client, embeddings)
 
 
 def get_retrieval_pipeline(
-    vector_store: VectorStoreBase = Depends(get_vector_store),
+    vector_store: VectorStore = Depends(get_vector_store),
 ) -> RetrievalPipeline:
     return RetrievalPipeline(vector_store)
 

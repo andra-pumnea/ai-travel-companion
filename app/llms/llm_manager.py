@@ -2,7 +2,7 @@ import time
 import random
 import logging
 
-from typing import Type
+from typing import Type, Optional
 from pydantic import BaseModel
 
 from app.llms.llm_clients.llm_router import LLMRouter
@@ -27,8 +27,7 @@ class LLMManager:
         user_query: str,
         prompt: str,
         response_model: Type[BaseModel],
-        tools: list[dict] = None,
-        conversation_id: str = None,
+        tools: Optional[list[dict]] = None,
         max_tokens: int = 400,
     ) -> str:
         """

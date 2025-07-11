@@ -37,6 +37,7 @@ class FactManager:
             return []
 
         existing_facts = []
+        existing_facts_str = ""
         for i in range(0, len(journal_entries), limit):
             batch_entries = journal_entries[i : i + limit]
             logging.info(
@@ -54,7 +55,7 @@ class FactManager:
             rendered_prompt = FactExtracting.format(
                 user_id=user_id,
                 journal_entries=journal_entries_str,
-                existing_facts=existing_facts,
+                existing_facts=existing_facts_str,
             )
             response = self.llm_manager.call_llm_with_retry(
                 user_query=journal_entries_str,
@@ -62,13 +63,15 @@ class FactManager:
                 response_model=FactExtracting.response_model(),
                 max_tokens=400,
             )
-            logging.info(f"Prompt token usage: {len(rendered_prompt)}")
 
-            existing_facts = "\n".join(
-                [
-                    f"- {fact.category}: {fact.fact_text}"
-                    for fact in response.extracted_facts
-                ]
+            new_facts = [
+                {"category": fact.category, "fact_text": fact.fact_text}
+                for fact in response.extracted_facts
+            ]
+            existing_facts.extend(new_facts)
+
+            existing_facts_str = "\n".join(
+                f"- {fact['category']}: {fact['fact_text']}" for fact in existing_facts
             )
 
         await self.fact_store.add_data(response.extracted_facts)

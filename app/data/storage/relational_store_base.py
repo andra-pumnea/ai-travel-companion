@@ -7,7 +7,7 @@ class RelationalStoreBase(ABC):
     """
 
     @abstractmethod
-    def add_records(self, table_name: str, record: list[dict]) -> str:
+    async def add_records(self, table_name: str, record: list[dict]) -> None:
         """
         Add a single record to the storage.
 
@@ -18,7 +18,7 @@ class RelationalStoreBase(ABC):
         pass
 
     @abstractmethod
-    def upsert_records(self, table_name: str, records: list[dict]) -> None:
+    async def upsert_records(self, table_name: str, records: list[dict]) -> None:
         """
         Upsert records into the storage.
 
@@ -28,7 +28,7 @@ class RelationalStoreBase(ABC):
         pass
 
     @abstractmethod
-    def query(self, table_name: str, query_params: dict) -> list:
+    async def query(self, table_name: str, query_params: dict) -> list:
         """
         Query records from the storage.
 

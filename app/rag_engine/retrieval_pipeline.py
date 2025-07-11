@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from app.data.storage.vector_store_base import VectorStoreBase
+from app.rag_engine.vector_store import VectorStore
 from app.llms.llm_manager import LLMManager
 from app.memory.conversation_history.local_memory import LocalMemory
 from app.prompts.query_rewriting import QueryRewriting
@@ -9,7 +9,7 @@ from app.prompts.question_answering import QuestionAnswering
 
 
 class RetrievalPipeline:
-    def __init__(self, vector_store: VectorStoreBase):
+    def __init__(self, vector_store: VectorStore):
         self.vector_store = vector_store
         self.llm_manager = LLMManager()
         self.memory = LocalMemory()
@@ -68,7 +68,6 @@ class RetrievalPipeline:
             rewrite_query_response = self.llm_manager.call_llm_with_retry(
                 user_query=user_query,
                 prompt=rendered_prompt,
-                conversation_id=conversation_id,
                 response_model=QueryRewriting.response_model(),
             )
             logging.info(
@@ -77,14 +76,10 @@ class RetrievalPipeline:
             return rewrite_query_response.rewritten_user_query
         return user_query
 
-    def _generate_answer(
-        self, user_query: str, context: str, conversation_id: str
-    ) -> Any:
+    def _generate_answer(self, user_query: str, context: str) -> Any:
         """
         Generates an answer based on the user query and context.
         :param user_query: The original user query.
-        :param context: The context retrieved from the vector store.
-        :param conversation_id: The ID of the conversation.
         :return: The generated answer.
         """
         rendered_prompt = QuestionAnswering.format(context=context)
@@ -96,7 +91,6 @@ class RetrievalPipeline:
         response = self.llm_manager.call_llm_with_retry(
             user_query=user_query,
             prompt=rendered_prompt,
-            conversation_id=conversation_id,
             response_model=QuestionAnswering.response_model(),
         )
         return response
@@ -116,9 +110,5 @@ class RetrievalPipeline:
         docs = self.search_journal_entries(user_query, user_trip_id, limit)
         context = "\n\n".join(doc["description"] for doc in docs) if docs else ""
 
-        response = self._generate_answer(
-            user_query=user_query,
-            context=context,
-            conversation_id=user_trip_id,
-        )
+        response = self._generate_answer(user_query=user_query, context=context)
         return response.answer, docs

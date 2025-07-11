@@ -6,6 +6,7 @@ from app.planner_engine.tools.retrieval_tool import RetrievalTool
 from app.planner_engine.tools.weather_tool import WeatherTool
 from app.planner_engine.tools.memory_tool import MemoryTool
 from app.prompts.travel_agent import TravelAgentPrompt
+from app.prompts.travel_agent import PlanStepResponse
 
 
 class PlannerAgent:
@@ -14,7 +15,9 @@ class PlannerAgent:
         self.tools_manager = ToolManager()
         self.steps_so_far = []
 
-    def run(self, user_query: str, user_trip_id: str, max_steps: int = 5):
+    def run(
+        self, user_query: str, user_trip_id: str, max_steps: int = 5
+    ) -> PlanStepResponse:
         """
         Generate a plan for the given task using the planner.
         :param user_query: The user's query to plan for.

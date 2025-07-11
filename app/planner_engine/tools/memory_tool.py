@@ -12,9 +12,8 @@ class MemoryTool(ToolBase):
         description: str = "Retrieve stored user preferences and interests.",
     ):
         super().__init__(name, description)
-        self.memory_storage = {}
 
-    def run(self, user_id: str = None) -> str:
+    def run(self, user_id: str) -> list[str]:
         """
         Adds or retrieves data from the in-memory storage.
         :param key: The key for the data.

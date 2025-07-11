@@ -86,29 +86,6 @@ class TestQdrantClient:
         assert "Error adding documents to collection" in str(e.value)
         self.wrapper.client.upload_points.assert_called_once()
 
-    def test_add_document(self):
-        collection_name = "test_collection"
-        document = PointStruct(id=1, vector=[0.1, 0.2], payload={"text": "doc 1"})
-
-        self.wrapper.add_document(collection_name, document)
-
-        self.wrapper.client.upsert.assert_called_once_with(
-            collection_name=collection_name, points=[document]
-        )
-
-    def test_add_document_error(self):
-        collection_name = "test_collection"
-        document = PointStruct(id=1, vector=[0.1, 0.2], payload={"text": "doc 1"})
-        self.wrapper.client.upsert.side_effect = Exception("Upsert error")
-
-        with pytest.raises(QdrantClientError) as e:
-            self.wrapper.add_document(collection_name, document)
-
-        assert "Error adding document" in str(e.value)
-        self.wrapper.client.upsert.assert_called_once_with(
-            collection_name=collection_name, points=[document]
-        )
-
     def test_search_collection_not_found(self):
         collection_name = "unknown_collection"
         self.wrapper.collection_exists = MagicMock(return_value=False)

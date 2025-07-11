@@ -12,9 +12,7 @@ class HuggingFaceEmbeddings(EmbeddingBase):
     def __init__(self, model_name: str = "sentence-transformers/all-mpnet-base-v2"):
         self.model = SentenceTransformer(model_name)
 
-    def embed(
-        self, text: Union[str, list[str]]
-    ) -> Union[list[float], list[list[float]]]:
+    def embed(self, text: Union[str, list[str]]) -> list[list[float]]:
         """
         Converts text into a vector representation.
         """

@@ -8,9 +8,7 @@ class EmbeddingBase(ABC):
     """
 
     @abstractmethod
-    def embed(
-        self, text: Union[str, list[str]]
-    ) -> Union[list[float], list[list[float]]]:
+    def embed(self, text: Union[str, list[str]]) -> list[list[float]]:
         """
         Converts text into a vector representation.
         """

@@ -1,6 +1,6 @@
 import logging
-from typing import Any, Type
-from httpx import HTTPStatusError, TimeoutException
+from typing import Any, Type, Optional
+from httpx import TimeoutException
 
 import instructor
 from instructor.exceptions import InstructorRetryException
@@ -33,7 +33,7 @@ class GroqClient(BaseLLMClient):
         self,
         response_model: Type[BaseModel],
         messages: list[dict[str, str]],
-        tools: list[dict] = None,
+        tools: Optional[list[dict]] = None,
         **kwargs,
     ) -> Any:
         """

@@ -29,13 +29,7 @@ class TravelAgentPrompt(PromptBase):
     prompt_name = "travel_agent"
 
     @classmethod
-    def format(
-        cls,
-        user_query: str,
-        context: str,
-        max_steps: int = 5,
-        current_step: int = 4,
-    ) -> str:
+    def format(cls, **kwargs) -> str:
         """
         Formats the prompt with the given user query and context.
         :param user_query: The user's question or request.
@@ -46,16 +40,17 @@ class TravelAgentPrompt(PromptBase):
         date = datetime.now().strftime("%Y-%m-%d")
         prompt = cls.build_prompt(
             cls.prompt_name,
-            user_query=user_query,
-            context=context,
+            user_query=kwargs.get("user_query"),
+            context=kwargs.get("context"),
             date=date,
-            max_steps=max_steps,
-            current_step=current_step + 1,
+            max_steps=kwargs.get("max_steps", 5),
+            current_step=kwargs.get("current_step"),
         )
 
         cls._log_token_usage(prompt=prompt)
         return prompt
 
+    @staticmethod
     def response_model() -> Type[BaseModel]:
         """
         Returns the Pydantic model class expected for the LLM response.

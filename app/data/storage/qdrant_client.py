@@ -72,19 +72,6 @@ class QdrantClientWrapper(VectorStoreBase):
             f"Added {len(documents)} documents to collection '{collection_name}'."
         )
 
-    def add_document(self, collection_name: str, document: PointStruct):
-        """
-        Add a single document to a specified collection in the Qdrant vector store.
-        :param collection_name: Name of the collection to add the document to.
-        :param document: Document to add as a PointStruct.
-        :return: Confirmation message.
-        """
-        try:
-            self.client.upsert(collection_name=collection_name, points=[document])
-            logging.info(f"Document added to collection '{collection_name}'.")
-        except Exception as e:
-            raise QdrantClientError(f"Error adding document: {e}")
-
     def search(self, collection_name: str, query_embedding: list, k: int = 5):
         """
         Perform a similarity search in a specified collection.
@@ -150,7 +137,7 @@ class QdrantClientWrapper(VectorStoreBase):
             raise e
 
     @staticmethod
-    def trip_step_to_point(dto: TripStepDTO, embedding: list[float]) -> PointStruct:
+    def trip_step_to_document(dto: TripStepDTO, embedding: list[float]) -> PointStruct:
         """Convert a TripStepDTO to a PointStruct for Qdrant storage.
         :param dto: TripStepDTO object containing trip step data.
         :param embedding: Embedding vector for the trip step.

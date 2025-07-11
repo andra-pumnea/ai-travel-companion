@@ -1,11 +1,10 @@
-from app.memory.memory_base import BaseMemoryStore
 from app.data.storage.relational_store_base import RelationalStoreBase
 from app.data.dtos.fact import FactDTO
 
 TABLE_NAME = "user_facts"
 
 
-class FactStore(BaseMemoryStore):
+class FactStore:
     """
     MemoryManager is responsible for managing long-term memory storage.
     It implements the BaseMemoryStore interface.

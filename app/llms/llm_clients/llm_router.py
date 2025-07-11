@@ -4,7 +4,7 @@ from app.llms.llm_clients.groq_client import GroqClient
 
 
 class LLMRouter:
-    _client_registry = {}
+    _client_registry: dict[str, tuple[Any, Any]] = {}
     _clients = {"groq": (GroqClient(), GroqClient().settings)}
 
     @classmethod

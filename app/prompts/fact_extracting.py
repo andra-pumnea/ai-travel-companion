@@ -27,21 +27,21 @@ class FactExtracting(PromptBase):
     prompt_name = "fact_extracting"
 
     @classmethod
-    def format(
-        cls, user_id: str, journal_entries: str, existing_facts: list[dict]
-    ) -> str:
+    def format(cls, **kwargs) -> str:
         """
         Formats the prompt with the given conversation history and user query.
         :param conversation_history: The conversation history to include in the prompt.
         :param user_query: The user's query to extract facts from.
         :return: The formatted prompt string.
         """
-        return cls.build_prompt(
+        prompt = cls.build_prompt(
             cls.prompt_name,
-            user_id=user_id,
-            journal_entries=journal_entries,
-            existing_facts=existing_facts,
+            user_id=kwargs.get("user_id"),
+            journal_entries=kwargs.get("journal_entries"),
+            existing_facts=kwargs.get("existing_facts"),
         )
+        cls._log_token_usage(prompt=prompt)
+        return prompt
 
     @classmethod
     def response_model(cls) -> Type[BaseModel]:

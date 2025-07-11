@@ -31,7 +31,7 @@ class PromptBase(ABC):
         return cls._env
 
     @staticmethod
-    def build_prompt(template: str, **kwargs) -> str:
+    def build_prompt(template_path: str, **kwargs) -> str:
         """
         Build a prompt from a Jinja2 template with the given parameters.
         :param template: The name of the Jinja2 template file (without .j2 extension).
@@ -40,7 +40,7 @@ class PromptBase(ABC):
         :raises ValueError: If there is an error rendering the template.
         """
         env = PromptBase._get_env()
-        template_path = f"{template}.j2"
+        template_path = f"{template_path}.j2"
         with open(env.loader.get_source(env, template_path)[1], "r") as file:
             template_content = file.read()
 

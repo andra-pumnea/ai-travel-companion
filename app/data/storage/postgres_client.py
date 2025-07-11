@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Callable
 
 from sqlalchemy import select, inspect
 from sqlalchemy.exc import SQLAlchemyError
@@ -35,7 +36,7 @@ class PostgresClientWrapper(RelationalStoreBase):
                 lambda sync_conn: table_name in inspect(sync_conn).get_table_names()
             )
 
-    async def _get_record_type(self, table_name: str) -> any:
+    async def _get_record_type(self, table_name: str) -> Any:
         """Check table exists and get record type or raise.
         :param table_name: The name of the table to check.
         :return: The SQLAlchemy model class for the table.
@@ -50,7 +51,7 @@ class PostgresClientWrapper(RelationalStoreBase):
         return record_type
 
     async def _execute_db_operation(
-        self, records: list[dict], table_name: str, operation_func: callable
+        self, records: list[dict], table_name: str, operation_func: Callable
     ) -> None:
         """
         Helper method to execute DB operations within a transaction.
@@ -156,7 +157,7 @@ class PostgresClientWrapper(RelationalStoreBase):
             raise e
 
     @staticmethod
-    def _model_to_dict(db_model_instance: any) -> dict:
+    def _model_to_dict(db_model_instance: Any) -> dict:
         """
         Convert a SQLAlchemy model instance to a dictionary.
         :param db_model_instance: The SQLAlchemy model instance to convert.

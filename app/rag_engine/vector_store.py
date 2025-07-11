@@ -1,5 +1,8 @@
 import logging
 
+from qdrant_client.models import PointStruct
+
+from app.data.dtos.trip import TripStepDTO
 from app.data.storage.vector_store_base import VectorStoreBase
 from app.embeddings.embedding_base import EmbeddingBase
 from app.core.exceptions.custom_exceptions import VectorStoreError
@@ -25,7 +28,7 @@ class VectorStore:
 
         self.__class__._initialized = True  # Mark as initialized
 
-    def prepare_data(self, documents: list[str]) -> list:
+    def prepare_data(self, documents: list[TripStepDTO]) -> list[PointStruct]:
         """
         Prepares data for vectorization.
         :param documents: List of documents to prepare.
@@ -39,7 +42,7 @@ class VectorStore:
         embeddings = self.embeddings.embed(texts)
 
         prepared_documents = [
-            self.client.trip_step_to_point(dto=doc, embedding=embedding)
+            VectorStoreBase.trip_step_to_document(dto=doc, embedding=embedding)
             for doc, embedding in zip(documents, embeddings)
         ]
         logging.info(f"Prepared {len(prepared_documents)} documents with embeddings.")
@@ -56,14 +59,6 @@ class VectorStore:
             self.client.create_collection(collection_name, embedding_size)
 
         self.client.add_documents(collection_name, documents)
-
-    def add_document(self, collection_name: str, document: str):
-        """
-        Adds a single document to the vector store.
-        :param collection_name: Name of the collection to add the document to.
-        :param document: Document to add.
-        """
-        self.client.add_document(collection_name, [document])
 
     def search(self, collection_name: str, query: str, limit: int = 5):
         """

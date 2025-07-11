@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Type, Optional
+
+from pydantic import BaseModel
 
 
 class BaseLLMClient(ABC):
@@ -9,10 +12,9 @@ class BaseLLMClient(ABC):
     @abstractmethod
     def generate(
         self,
-        user_query: str,
-        prompt: str,
-        conversation_id: str,
-        response_model=None,
+        response_model: Type[BaseModel],
+        messages: list[dict[str, str]],
+        tools: Optional[list[dict]] = None,
         **kwargs,
     ):
         """
@@ -20,7 +22,6 @@ class BaseLLMClient(ABC):
 
         :param user_query: The query from the user.
         :param prompt: The prompt to be used for the LLM.
-        :param conversation_id: The ID of the conversation.
         :param response_model: The Pydantic model to validate the response.
         :param kwargs: Additional parameters for the LLM call.
         :return: The response from the LLM.

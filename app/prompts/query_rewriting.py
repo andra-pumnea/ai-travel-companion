@@ -21,17 +21,19 @@ class QueryRewriting(PromptBase):
     prompt_name = "query_rewriting"
 
     @classmethod
-    def format(self, conversation_history: str, followup_question: str) -> str:
+    def format(cls, **kwargs) -> str:
         """
         Formats the prompt with the given conversation history and follow-up question.
         :param conversation_history: The conversation history to include in the prompt.
         :param followup_question: The follow-up question to rewrite.
         :return: The formatted prompt string."""
-        return self.build_prompt(
-            self.prompt_name,
-            conversation_history=conversation_history,
-            followup_question=followup_question,
+        prompt = cls.build_prompt(
+            cls.prompt_name,
+            conversation_history=kwargs.get("conversation_history"),
+            followup_question=kwargs.get("followup_question"),
         )
+        cls._log_token_usage(prompt=prompt)
+        return prompt
 
     @classmethod
     def response_model(cls) -> Type[BaseModel]:

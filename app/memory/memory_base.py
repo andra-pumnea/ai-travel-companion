@@ -1,3 +1,4 @@
+from typing import Any
 from abc import ABC, abstractmethod
 
 
@@ -7,14 +8,14 @@ class BaseMemoryStore(ABC):
     """
 
     @abstractmethod
-    def add_data(self, key: str, value: any):
+    def add_data(self, key: str, value: Any) -> None:
         """
         Adds data to the memory.
         """
         pass
 
     @abstractmethod
-    def get_data(self, key: str) -> any:
+    def get_data(self, key: str) -> Any:
         """
         Retrieves data from the memory.
         """

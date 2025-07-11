@@ -1,5 +1,5 @@
 from app.planner_engine.tools.tool_base import ToolBase
-from app.rag_engine.retrieval_pipeline import RetrievalPipeline
+from app.server.dependencies import get_retrieval_pipeline
 
 
 class RetrievalTool(ToolBase):
@@ -13,9 +13,9 @@ class RetrievalTool(ToolBase):
         description: str = "The retrieval tool is a semantic similarity tool to learn only from the user's past experiences, not future plans.",
     ):
         super().__init__(name, description)
-        self.retrieval_pipeline = RetrievalPipeline()
+        self.retrieval_pipeline = get_retrieval_pipeline()
 
-    def run(self, query: str, user_trip_id: str) -> dict:
+    def run(self, query: str, user_trip_id: str) -> list[dict]:
         """
         Retrieves information based on the provided query and metadata.
         :param query: The query to search for in the journal.
