@@ -31,8 +31,11 @@ class TestPostgresClientWrapper:
         mock_session_ctx.__aexit__.return_value = None
         self.wrapper.session = MagicMock(return_value=mock_session_ctx)
 
+        self.wrapper._TABLE_MAPPING = {"user_facts": UserFacts}
+
     async def test_get_record_type_table_does_not_exist(self):
         table_name = "non_existent_table"
+        self.wrapper._table_exists = AsyncMock(return_value=False)
 
         with pytest.raises(
             ValueError,
@@ -107,8 +110,7 @@ class TestPostgresClientWrapper:
         record_type = MagicMock()
         records = [{"user_id": 1, "text": "test record"}]
 
-        self.wrapper._table_exists = AsyncMock(return_value=True)
-        self.wrapper._TABLE_MAPPING = {"test_table": record_type}
+        self.wrapper._get_record_type = AsyncMock(return_value=record_type)
 
         await self.wrapper.add_records(table_name, records)
 
@@ -117,9 +119,8 @@ class TestPostgresClientWrapper:
 
     async def test_add_invalid_records_exception(self):
         table_name = "test_table"
-        self.wrapper._TABLE_MAPPING = {table_name: UserFacts}
 
-        self.wrapper._table_exists = AsyncMock(return_value=True)
+        self.wrapper._get_record_type = AsyncMock(return_value=UserFacts)
 
         bad_data = [{"test": 123}]
 
@@ -130,8 +131,7 @@ class TestPostgresClientWrapper:
         table_name = "test_table"
         records = [{"user_id": 1, "fact": "test record", "category": "test category"}]
 
-        self.wrapper._table_exists = AsyncMock(return_value=True)
-        self.wrapper._TABLE_MAPPING = {"test_table": UserFacts}
+        self.wrapper._get_record_type = AsyncMock(return_value=UserFacts)
 
         await self.wrapper.upsert_records(table_name, records)
 
@@ -144,8 +144,7 @@ class TestPostgresClientWrapper:
         mock_record_type.get_upsert_conflict_target.return_value = []
         mock_record_type.get_upsert_update_fields.return_value = []
 
-        self.wrapper._TABLE_MAPPING = {table_name: mock_record_type}
-        self.wrapper._table_exists = AsyncMock(return_value=True)
+        self.wrapper._get_record_type = AsyncMock(return_value=mock_record_type)
 
         with pytest.raises(
             ValueError,
@@ -159,8 +158,7 @@ class TestPostgresClientWrapper:
             {"user_id": 1, "fact": "test record old", "category": "test category"}
         ]
 
-        self.wrapper._table_exists = AsyncMock(return_value=True)
-        self.wrapper._TABLE_MAPPING = {table_name: UserFacts}
+        self.wrapper._get_record_type = AsyncMock(return_value=UserFacts)
 
         with patch("app.data.storage.postgres_client.insert") as mock_insert:
             mock_insert_obj = MagicMock()
@@ -192,8 +190,7 @@ class TestPostgresClientWrapper:
         query_params = {"user_id": 1}
         mock_record = UserFacts(user_id=1, fact="test fact", category="test category")
 
-        self.wrapper._table_exists = AsyncMock(return_value=True)
-        self.wrapper._TABLE_MAPPING = {table_name: UserFacts}
+        self.wrapper._get_record_type = AsyncMock(return_value=UserFacts)
 
         mock_result = MagicMock()
         mock_scalars = MagicMock()

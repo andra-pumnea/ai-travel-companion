@@ -16,16 +16,25 @@ class PostgresClientWrapper(RelationalStoreBase):
     Wrapper for PostgreSQL client to manage relational store operations.
     """
 
+    _instance = None
+    _initialized = False
+
     _TABLE_MAPPING = {
         "user_facts": UserFacts,
     }
 
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self, config: PostgresConfig):
-        self._config = config
-        self.engine = create_async_engine(self._config.db_url)
-        self.session = async_sessionmaker(self.engine, expire_on_commit=False)
-        self._initialized = True
-        logging.info("PostgresClientWrapper initialized.")
+        if not self._initialized:
+            self._config = config
+            self.engine = create_async_engine(self._config.db_url)
+            self.session = async_sessionmaker(self.engine, expire_on_commit=False)
+            self._initialized = True
+            logging.info("PostgresClientWrapper initialized.")
 
     async def _table_exists(self, table_name: str) -> bool:
         """
