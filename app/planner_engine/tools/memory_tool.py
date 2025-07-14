@@ -1,30 +1,39 @@
+import logging
+from typing import Optional
+
 from app.planner_engine.tools.tool_base import ToolBase
+from app.memory.facts.fact_store import FactStore
+from app.server.dependencies import get_storage_client
+from app.data.storage.relational_store_base import RelationalStoreBase
 
 
-class MemoryTool(ToolBase):
+class UserFactsTool(ToolBase):
     """
     A tool for managing in-memory storage.
     """
 
     def __init__(
         self,
-        name: str = "memory_tool",
-        description: str = "Retrieve stored user preferences and interests.",
+        name: str = "user_facts_tool",
+        description: str = "Retrieve stored facts about user preferences and interests when traveling",
+        storage_client: Optional[RelationalStoreBase] = None,
     ):
         super().__init__(name, description)
+        if storage_client is None:
+            storage_client = get_storage_client()
 
-    def run(self, user_id: str) -> list[str]:
+        self.fact_store = FactStore(storage_client)
+
+    async def run(self, user_id: str) -> list[dict]:
         """
         Adds or retrieves data from the in-memory storage.
         :param key: The key for the data.
         :param value: The value to store or retrieve.
         :return: A confirmation message or the stored value.
         """
-        return [
-            "Likes hiking, diving, snorkeling, and swimming.",
-            "Likes to try new foods.",
-            "Doesn't drink alcohol.",
-        ]
+        user_facts = await self.fact_store.get_data(user_id)
+        logging.info(f"Retrieved {len(user_facts)} facts for user {user_id}.")
+        return [fact.model_dump() for fact in user_facts]
 
     @property
     def tool_info(self) -> dict:

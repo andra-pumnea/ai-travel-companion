@@ -5,6 +5,27 @@ from pydantic import BaseModel, Field
 from app.prompts.prompt_base import PromptBase
 
 
+class TravelPlan(BaseModel):
+    destination: str = Field(..., description="The destination of the trip.")
+    travel_dates: Optional[str] = Field(
+        None, description="The dates or period of the trip."
+    )
+    duration: Optional[str] = Field(None, description="How long the trip will last.")
+    weather_notes: Optional[str] = Field(
+        None, description="Summary of expected weather."
+    )
+    user_preferences: Optional[str] = Field(
+        None, description="User interests or preferences used in planning."
+    )
+    activities: list[str] = Field(..., description="Planned activities or attractions.")
+    budget_estimate: Optional[str] = Field(
+        None, description="Estimated cost or budget summary."
+    )
+    additional_tips: Optional[str] = Field(
+        None, description="Any other tips or travel advice."
+    )
+
+
 class PlanStepResponse(BaseModel):
     thought_process: str = Field(
         description="List of thoughts used for reasoning that the AI travel assistant had while planning the trip."
@@ -15,11 +36,19 @@ class PlanStepResponse(BaseModel):
     )
     tool_input: Optional[str] = Field(
         None,
-        description="The input to provide to the tool specified in `tool`. Omit if this is the final travel_plan.",
+        description="The input to provide to the tool specified in `tool`. Omit if this is the final travel plan.",
+    )
+    final: bool = Field(
+        False,
+        description="Set to True when this is the final step and a complete travel plan is returned.",
+    )
+    travel_plan: Optional[TravelPlan] = Field(
+        None,
+        description="Structured plan output when the planning is complete. Required if `final` is True.",
     )
     answer: Optional[str] = Field(
         None,
-        description="The final answer consisting of a plan to be shared with the user.",
+        description="Optional natural-language summary of the travel plan, to be shown to the user.",
     )
 
 

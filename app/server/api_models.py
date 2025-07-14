@@ -28,7 +28,8 @@ class SearchJournalWithGenerationResponse(BaseModel):
 
 class PlanTripRequest(BaseModel):
     user_query: str
-    user_trip_id: str
+    user_id: str
+    trip_id: str
     max_steps: int = 5
 
 

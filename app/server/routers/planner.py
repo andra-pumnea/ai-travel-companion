@@ -23,7 +23,8 @@ async def plan_trip(request: PlanTripRequest) -> PlanTripResponse:
     try:
         response = await planner_service.plan_trip(
             user_query=request.user_query,
-            user_trip_id=request.user_trip_id,
+            user_id=request.user_id,
+            trip_id=request.trip_id,
             max_steps=request.max_steps,
         )
     except Exception as e:

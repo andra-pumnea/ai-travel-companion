@@ -9,7 +9,7 @@ class WeatherTool(ToolBase):
     def __init__(
         self,
         name: str = "weather_tool",
-        description: str = "Get current weather information",
+        description: str = "Get current weather information for a specified location.",
     ):
         super().__init__(name, description)
 

@@ -7,7 +7,7 @@ class PlannerService:
         self.planner_agent = PlannerAgent()
 
     async def plan_trip(
-        self, user_query: str, user_trip_id: str, max_steps: int = 5
+        self, user_query: str, user_id: str, trip_id: str, max_steps: int = 5
     ) -> PlanStepResponse:
         """
         Plans a trip based on the user's query and trip ID.
@@ -17,8 +17,11 @@ class PlannerService:
         :return: A string containing the planned trip details.
         """
         try:
-            response = self.planner_agent.run(
-                user_query=user_query, user_trip_id=user_trip_id, max_steps=max_steps
+            response = await self.planner_agent.run(
+                user_query=user_query,
+                user_id=user_id,
+                trip_id=trip_id,
+                max_steps=max_steps,
             )
             return response
         except Exception as e:
