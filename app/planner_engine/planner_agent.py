@@ -12,7 +12,7 @@ class PlannerAgent:
     def __init__(self):
         self.llm_manager = LLMManager()
         self.tools_manager = ToolManager()
-        self.steps_so_far = []
+        self.tool_info = self._prepare_tools()
 
     async def run(
         self, user_query: str, user_id: str, trip_id: str, max_steps: int = 5
@@ -26,16 +26,16 @@ class PlannerAgent:
         """
         logging.info(f"Running planner agent with user query: {user_query}")
 
-        tool_info = self._prepare_tools()
-        logging.info(f"Available tools: {tool_info}")
+        steps_so_far: list[str] = []
+        logging.info(f"Available tools: {self.tool_info}")
 
         for step in range(max_steps):
-            context = "\n".join(self.steps_so_far)
+            context = "\n".join(steps_so_far)
 
             rendered_prompt = TravelAgentPrompt.format(
                 user_query=user_query,
                 context=context,
-                current_step=step,
+                current_step=step + 1,
                 max_steps=max_steps,
             )
 
@@ -65,8 +65,8 @@ class PlannerAgent:
                     tool = self.tools_manager.get_tool(tool_name)
                     if not tool:
                         logging.error(f"Tool '{tool_name}' not found.")
-                        self.steps_so_far.append(
-                            f"Step {step + 1}/{max_steps}: Tool '{tool_name}' does not exist, I need to pick a different tool."
+                        steps_so_far.append(
+                            f"Step {step + 1}/{max_steps}: Tool '{tool_name}' does not exist, I need to pick a different tool or start generating the itinerary."
                         )
                         continue
                     if tool.name == "retrieval_tool":
@@ -79,17 +79,15 @@ class PlannerAgent:
                         tool_response = await tool.run(user_id=user_id)
                     else:
                         tool_response = tool.run(tool_input)
-                    self.steps_so_far.append(
-                        f"Step {step + 1}/{max_steps}: Tool: {tool_name}, Tool Input: {tool_input}, Response: {tool_response}, Thought process: {thought_process} \n"
+                    steps_so_far.append(
+                        f"Step {step + 1}/{max_steps}: Tool: {tool_name}, Tool Input: {tool_input}, Tool Output: {tool_response}, Thought process: {thought_process} \n"
                     )
                 else:
                     logging.info("No tool or tool_input generated.")
                     continue
             except Exception as e:
                 logging.error(f"Error during planning step {step + 1}: {e}")
-                self.steps_so_far.append(
-                    f"Step {step + 1}/{max_steps}: Error: {str(e)}"
-                )
+                steps_so_far.append(f"Step {step + 1}/{max_steps}: Error: {str(e)}")
 
         return TravelAgentPrompt.response_model()(
             answer="Sorry, I couldn't generate a complete plan. Please try again.",

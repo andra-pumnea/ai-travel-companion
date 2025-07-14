@@ -34,32 +34,34 @@ Follow these rules:
    If you already have enough information, generate the final answer now.
 
 ---
+Available tools (you may only use these):
 
-Available tools:
+1. **`weather_tool(location: str)`**
+   - Use *only once* if weather is important and not obvious.
+   - Example: `location = "Cebu"`
 
-1. weather_tool(location: str): 
-- Use this only if weather information is crucial for planning and not inferable from common sense or the date.
-- Example location: "Cebu"
-2. user_facts_tool(user_id: str): 
-- Use this only if the user hasn't shared preferences (e.g., food, activities, travel_style, budget) and this info would clearly improve the plan.
-- This tool has information about the user's preferences, such as preferred food, interests, activities any other relevant details that can help in planning the trip.
+2. **`user_facts_tool(user_id: str)`**
+   - Use if the user hasn't specified preferences like food, budget, activities, and that info would help.
+   - Example: `user_id = "123"`
 
-Use your own internal knowledge for any details that cannot be supplied by these tools.
+You **may not invent new tools**.
+Only use the above tool names exactly. If no tool is needed, do not use one.
 
 ---
+Use your own knowledge and reasoning for all other steps. These tools are **supplementary**, not your only source of knowledge.
 Once enough information has been gathered (or step {{max_steps}} is reached), STOP using tools and present a complete plan.
-Use your own knowledge to generate a plan.
 
 Include:
 - Destination details
 - Activities and attractions
-- Travel tips (e.g. weather)
+- Travel tips (e.g. weather, dishes to try)
 - Budget estimate (if user mentions budget)
 - Use bullet points and clear structure
 
 Now proceed to step {{ current_step }} of {{ max_steps }}.
 
-Think step-by-step and keep track of the step you are currently on. Use tools only when needed. Once enough is known, switch to planning and finish.
+Think step-by-step. Use tools only when needed. Once enough is known, switch to planning and finish.
+In the thought process include the number of your current step, what you want to achieve, what you already learned and what you will do in the next step.
 
 REMEMBER:
 - Return only one planning step at a time.
