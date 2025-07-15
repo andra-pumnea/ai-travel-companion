@@ -4,6 +4,7 @@ from app.llms.llm_manager import LLMManager
 from app.planner_engine.tools.tool_manager import ToolManager
 from app.planner_engine.tools.weather_tool import WeatherTool
 from app.planner_engine.tools.memory_tool import UserFactsTool
+from app.planner_engine.tools.retrieval_tool import RetrievalTool
 from app.prompts.travel_agent import TravelAgentPrompt
 from app.prompts.travel_agent import PlanStepResponse
 
@@ -75,7 +76,7 @@ class PlannerAgent:
                             query=user_query,
                             user_trip_id=user_trip_id,
                         )
-                    if tool.name == "user_facts_tool":
+                    elif tool.name == "user_facts_tool":
                         tool_response = await tool.run(user_id=user_id)
                     else:
                         tool_response = tool.run(tool_input)
@@ -100,7 +101,7 @@ class PlannerAgent:
         :return: A list of tool descriptions.
         """
         logging.info("Preparing tools for the planner agent.")
-        # self.tools_manager.register_tool("retrieval_tool", RetrievalTool())
+        self.tools_manager.register_tool("retrieval_tool", RetrievalTool())
         self.tools_manager.register_tool("weather_tool", WeatherTool())
         self.tools_manager.register_tool("user_facts_tool", UserFactsTool())
 

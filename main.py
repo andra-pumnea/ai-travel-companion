@@ -8,9 +8,16 @@ from app.server.routers import journal, planner, user_facts
 
 def setup_logging():
     """Configure basic logging for the application."""
+    root_logger = logging.getLogger()
+
+    if root_logger.hasHandlers():
+        root_logger.handlers.clear()
+
     logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
     )
+    logging.getLogger().setLevel(logging.INFO)
 
 
 def create_app() -> FastAPI:
@@ -47,4 +54,4 @@ app = create_app()
 if __name__ == "__main__":
     setup_logging()
     logging.info("Starting Travel Journal RAG Assistant API")
-    uvicorn.run(app, log_level="info")
+    uvicorn.run(app, port=8000, host="0.0.0.0", log_level="info")

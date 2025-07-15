@@ -8,6 +8,7 @@ fastapi
 uvicorn
 pytest
 pytest-asyncio
+qdrant-client
 sqlalchemy
 asyncpg
 greenlet # For SQLAlchemy async support

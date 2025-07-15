@@ -1,5 +1,10 @@
 from app.planner_engine.tools.tool_base import ToolBase
-from app.server.dependencies import get_retrieval_pipeline
+from app.server.dependencies import (
+    get_retrieval_pipeline,
+    get_vector_store_client,
+    get_embeddings,
+    get_vector_store,
+)
 
 
 class RetrievalTool(ToolBase):
@@ -13,7 +18,12 @@ class RetrievalTool(ToolBase):
         description: str = "Retrieve using semantic similarity content from the user's past travels.",
     ):
         super().__init__(name, description)
-        self.retrieval_pipeline = get_retrieval_pipeline()
+        storage_client = get_vector_store_client()
+        embeddings = get_embeddings()
+        vector_store = get_vector_store(
+            storage_client=storage_client, embeddings=embeddings
+        )
+        self.retrieval_pipeline = get_retrieval_pipeline(vector_store=vector_store)
 
     def run(self, query: str, user_trip_id: str) -> list[dict]:
         """

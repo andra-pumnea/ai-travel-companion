@@ -1,11 +1,14 @@
 import sys
 import logging
+import requests
 
 from app.rag_engine.indexing_pipeline import IndexingPipeline
 from app.data.io.data_loader import (
     read_trip_from_polarsteps,
 )
 
+
+BASE_URL = "http://localhost:8000"
 
 
 def setup_logging():
@@ -15,11 +18,7 @@ def setup_logging():
     )
 
 
-if __name__ == "__main__":
-    setup_logging()
-
-    print("📒 Travel Journal RAG Assistant (type 'exit' to quit)\n")
-
+def index_data():
     # Read the trip data from Polarsteps
     trip_data = read_trip_from_polarsteps()
     user_trip_id = f"{trip_data.user_id}_{trip_data.id}"
@@ -33,6 +32,37 @@ if __name__ == "__main__":
             "⚠️ An error occurred while indexing the trip data. Please check the logs."
         )
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    setup_logging()
+
+    print("📒 Travel Journal RAG Assistant (type 'exit' to quit)\n")
+    # index_data()
+    user_id = "13574223"
+    trip_id = "16018145"
+
+    while True:
+        user_input = input("You: ").strip()
+        if user_input.lower() in ("exit", "quit"):
+            print("Bye!")
+            break
+
+        try:
+            payload = {
+                "user_query": user_input,
+                "user_id": user_id,
+                "trip_id": trip_id,
+                "max_steps": 3,
+            }
+            response = requests.post(f"{BASE_URL}/planner/plan_trip", json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                print("Bot:", data.get("answer", "(no reply)"))
+            else:
+                print(f"Error: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            print("Error connecting to the server:", e)
 
     logging.info("Trip data indexed successfully.")
     print("🗂️ Trip data indexed successfully.")

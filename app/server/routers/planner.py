@@ -1,8 +1,7 @@
-import logging
+from fastapi import APIRouter, status, HTTPException
 
 from app.server.api_models import PlanTripRequest, PlanTripResponse
 from app.services.planner_service import PlannerService
-from fastapi import APIRouter, status
 
 router = APIRouter()
 planner_service = PlannerService()
@@ -28,12 +27,8 @@ async def plan_trip(request: PlanTripRequest) -> PlanTripResponse:
             max_steps=request.max_steps,
         )
     except Exception as e:
-        logging.error(f"Error planning trip: {e}")
-        return PlanTripResponse(
-            answer="An error occurred while planning the trip. Please try again later.",
-            thought_process="Error during trip planning",
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}",
         )
-
-    return PlanTripResponse(
-        answer=response.answer, thought_process=response.thought_process
-    )
+    return PlanTripResponse(answer=response.answer)
