@@ -1,4 +1,3 @@
-from typing import Any
 from abc import ABC, abstractmethod
 
 
@@ -8,14 +7,14 @@ class BaseMemoryStore(ABC):
     """
 
     @abstractmethod
-    def add_data(self, key: str, value: Any) -> None:
+    def add_message(self, conversation_id: str, role: str, content: str) -> None:
         """
         Adds data to the memory.
         """
         pass
 
     @abstractmethod
-    def get_data(self, key: str) -> Any:
+    def get_history(self, conversation_id: str) -> list[dict[str, str]]:
         """
         Retrieves data from the memory.
         """

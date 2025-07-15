@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from app.core.settings import APISettings
-from app.server.routers import journal, planner, user_facts
+from app.server.routers import journal, planner, user_facts, chat
 
 
 def setup_logging():
@@ -26,6 +26,12 @@ def create_app() -> FastAPI:
         title=app_settings.project_name,
         description=app_settings.project_description,
         version=app_settings.project_version,
+    )
+
+    app.include_router(
+        chat.router,
+        prefix="/chat",
+        tags=["Chat Assistant"]
     )
 
     app.include_router(

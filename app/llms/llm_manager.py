@@ -15,11 +15,13 @@ from app.core.exceptions.llm_exceptions import (
     LLMGenerationError,
     LLMUnexpectedError,
 )
+from app.memory.conversation_history.local_memory import LocalMemory
 
 
 class LLMManager:
     def __init__(self):
         self.llm, self.settings = LLMRouter.get_client("groq")
+        self.chat_history = LocalMemory()
 
     def generate_response(
         self,
@@ -28,7 +30,9 @@ class LLMManager:
         prompt: str,
         response_model: Type[BaseModel],
         tools: Optional[list[dict]] = None,
+        conversation_id: Optional[str] = None,
         max_tokens: int = 400,
+        max_history: int = 5
     ) -> str:
         """
         Calls the LLM with the provided user query and prompt.
@@ -39,11 +43,16 @@ class LLMManager:
         :param response_model: The Pydantic model to validate the response.
         :return: The response from the LLM.
         """
+
         messages = [
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": user_query},
+            {"role": "system", "content": prompt}
         ]
-        # TODO: Add conversation history if available
+        if conversation_id:
+            history = self.chat_history.get_history(conversation_id)
+            messages.extend(history[-max_history:])
+        else:
+            messages.append({"role": "user", "content": user_query})
+
         return self.llm.generate(
             response_model=response_model,
             messages=messages,

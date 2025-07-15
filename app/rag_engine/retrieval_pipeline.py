@@ -65,7 +65,7 @@ class RetrievalPipeline:
         :param conversation_id: The ID of the conversation.
         :return: The rewritten user query.
         """
-        memory_data = self.memory.get_data(conversation_id)
+        memory_data = self.memory.get_history(conversation_id)
         if memory_data:
             rendered_prompt = QueryRewriting.format(
                 conversation_history=memory_data[-5:],

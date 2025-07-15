@@ -1,6 +1,7 @@
 import sys
+import uuid
 import logging
-import requests
+import requests # type: ignore
 
 from app.rag_engine.indexing_pipeline import IndexingPipeline
 from app.data.io.data_loader import (
@@ -26,6 +27,8 @@ def index_data():
     indexing_pipeline = IndexingPipeline()
     try:
         indexing_pipeline.add_trip_to_vector_store(trip_data, user_trip_id)
+        logging.info("Trip data indexed successfully.")
+        print("🗂️ Trip data indexed successfully.")
     except Exception as e:
         logging.error(f"Error during indexing: {e}")
         print(
@@ -41,6 +44,7 @@ if __name__ == "__main__":
     # index_data()
     user_id = "13574223"
     trip_id = "16018145"
+    conversation_id = str(uuid.uuid4())
 
     while True:
         user_input = input("You: ").strip()
@@ -53,9 +57,9 @@ if __name__ == "__main__":
                 "user_query": user_input,
                 "user_id": user_id,
                 "trip_id": trip_id,
-                "max_steps": 3,
+                "conversation_id": conversation_id,
             }
-            response = requests.post(f"{BASE_URL}/planner/plan_trip", json=payload)
+            response = requests.post(f"{BASE_URL}/chat/reply", json=payload)
             if response.status_code == 200:
                 data = response.json()
                 print("Bot:", data.get("answer", "(no reply)"))
@@ -63,6 +67,3 @@ if __name__ == "__main__":
                 print(f"Error: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
             print("Error connecting to the server:", e)
-
-    logging.info("Trip data indexed successfully.")
-    print("🗂️ Trip data indexed successfully.")

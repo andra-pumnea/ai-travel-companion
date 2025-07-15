@@ -1,3 +1,5 @@
+import logging
+
 from app.memory.memory_base import BaseMemoryStore
 
 
@@ -15,21 +17,22 @@ class LocalMemory(BaseMemoryStore):
         return cls._instance
 
     def __init__(self):
-        self.storage = {}
+        if not self._initialized:
+            self.storage = {}
+            self._initialized = True 
+            logging.info("LocalMemory conversation history initialized.")
 
-        self.__class__._initialized = True  # Mark as initialized
+    def add_message(self, conversation_id: str, role: str, content: str):
+        """
+        Adds a message to the in-memory chat history.
+        """
+        message = {"role": role, "content": content}
+        if conversation_id not in self.storage:
+            self.storage[conversation_id] = []
+        self.storage[conversation_id].append(message)
 
-    def add_data(self, key: str, value: str):
+    def get_history(self, conversation_id: str) -> list[dict[str, str]]:
         """
-        Adds data to the in-memory storage.
+        Returns full chat history for the given conversation.
         """
-        if key in self.storage:
-            self.storage[key].append(value)
-        else:
-            self.storage[key] = [value]
-
-    def get_data(self, key: str) -> str:
-        """
-        Retrieves data from the in-memory storage.
-        """
-        return self.storage.get(key)
+        return self.storage.get(conversation_id, [])

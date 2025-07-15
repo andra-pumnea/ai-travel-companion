@@ -61,15 +61,11 @@ class TravelAgentPrompt(PromptBase):
     def format(cls, **kwargs) -> str:
         """
         Formats the prompt with the given user query and context.
-        :param user_query: The user's question or request.
-        :param tool_names: A comma-separated string of available tool names.
-        :param context: The context to include in the prompt.
         :return: The formatted prompt string.
         """
         date = datetime.now().strftime("%Y-%m-%d")
         prompt = cls.build_prompt(
             cls.prompt_name,
-            user_query=kwargs.get("user_query"),
             context=kwargs.get("context"),
             date=date,
             max_steps=kwargs.get("max_steps", 5),

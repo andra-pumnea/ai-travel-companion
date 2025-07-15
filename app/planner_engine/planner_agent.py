@@ -34,7 +34,6 @@ class PlannerAgent:
             context = "\n".join(steps_so_far)
 
             rendered_prompt = TravelAgentPrompt.format(
-                user_query=user_query,
                 context=context,
                 current_step=step + 1,
                 max_steps=max_steps,

@@ -50,3 +50,10 @@ class GetAllFactsRequest(BaseModel):
 
 class GetAllFactsResponse(BaseModel):
     facts: list[FactDTO]
+
+class ReplyRequest(BaseUserRequest):
+    user_query: str
+    conversation_id: str
+
+class ReplyReponse(BaseModel):
+    answer: str
