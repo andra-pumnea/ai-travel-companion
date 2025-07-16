@@ -3,7 +3,6 @@ import logging
 from app.travel_assistant.planner_agent import PlannerAgent
 from app.travel_assistant.chat_agent import ChatAgent
 from app.prompts.chat_agent import ChatAgentResponse
-from app.prompts.planner_agent import PlannerAgentResponse
 from app.memory.conversation_history.local_memory import LocalMemory
 
 
@@ -24,9 +23,20 @@ class ChatService:
         :param conversation_id: Identifier for the ongoing conversation.
         :return: Assistant response or generated travel plan.
         """
-        self._add_to_conversation_history(conversation_id, user_query, role="user")
+        self.conversation_history.add_message(
+            conversation_id, role="user", content=user_query
+        )
+        updates = {"user_query": user_query}
+        self.conversation_history.update_session_state(conversation_id, updates)
 
         response = self.chat_agent.run(user_query, conversation_id)
+
+        collected_facts = self.conversation_history.get_session_state(
+            conversation_id
+        ).collected_facts
+        collected_facts.extend(response.collected_facts)
+        updates = {"collected_facts": list(set(collected_facts))}  # type: ignore
+        self.conversation_history.update_session_state(conversation_id, updates)
 
         if response.ready_to_plan:
             logging.info(
@@ -37,24 +47,13 @@ class ChatService:
             )
         else:
             logging.info(
-                "Conversation {conversation_id does not have enough information to start planning, asking follow up question."
+                f"Conversation {conversation_id} does not have enough information to start planning, asking follow up question."
             )
             return self._handle_follow_up(response, conversation_id)
 
-    def _add_to_conversation_history(
-        self, conversation_id: str, message: str, role: str
-    ):
-        """
-        Adds a user message to the conversation history.
-        :param conversation_id: Conversation ID to track the history.
-        :param message: The user’s input message.
-        :param role: Role: user or assistant.
-        """
-        self.conversation_history.add_message(conversation_id, role, message)
-
     async def _handle_planning(
         self,
-        response: PlannerAgentResponse,
+        response: ChatAgentResponse,
         user_id: str,
         trip_id: str,
         conversation_id: str,
@@ -68,17 +67,25 @@ class ChatService:
         :return: The final travel plan as a string.
         """
         try:
-            facts = ", ".join(response.collected_facts or [])
-            initial_query = self._get_initial_user_query(conversation_id)
-            full_query = f"{initial_query}, {facts}"
+            session = self.conversation_history.get_session_state(conversation_id)
+            facts = ", ".join(session.collected_facts or [])
+            initial_query = self._get_first_user_query(conversation_id)
+            full_query = (
+                f"Initial user query: {initial_query}, Collected information: {facts}"
+            )
+
+            if session.travel_plan:
+                full_query += f", Current travel plan: {session.travel_plan}"
 
             plan = await self.planner_agent.run(
                 user_query=full_query, user_id=user_id, trip_id=trip_id
             )
 
-            self._add_to_conversation_history(
-                conversation_id, plan.answer, role="assistant"
+            self.conversation_history.add_message(
+                conversation_id, role="assistant", content=plan.answer
             )
+            updates = {"travel_plan": plan.answer}
+            self.conversation_history.update_session_state(conversation_id, updates)
             return plan.answer
 
         except Exception as e:
@@ -93,12 +100,12 @@ class ChatService:
         :param conversation_id: The conversation ID for storing the reply.
         :return: Assistant’s message to the user.
         """
-        self._add_to_conversation_history(
-            conversation_id, response.answer, role="assistant"
+        self.conversation_history.add_message(
+            conversation_id, role="assistant", content=response.answer
         )
         return response.answer
 
-    def _get_initial_user_query(self, conversation_id: str) -> str:
+    def _get_first_user_query(self, conversation_id: str) -> str:
         """
         Retrieves the initial user query from the conversation history.
         :param conversation_id: Conversation ID to pull history from.
@@ -110,4 +117,4 @@ class ChatService:
                 f"No conversation history found for conversation_id: {conversation_id}"
             )
             return ""
-        return history[0]["content"]
+        return history[0].content

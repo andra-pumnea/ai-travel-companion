@@ -42,10 +42,6 @@ class PlannerAgentResponse(BaseModel):
         False,
         description="Set to True when this is the final step and a complete travel plan is returned.",
     )
-    travel_plan: Optional[TravelPlan] = Field(
-        None,
-        description="Structured plan output when the planning is complete. Required if `final` is True.",
-    )
     answer: Optional[str] = Field(
         None,
         description="Optional natural-language summary of the travel plan, to be shown to the user.",

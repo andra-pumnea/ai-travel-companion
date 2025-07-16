@@ -58,7 +58,9 @@ class RetrievalPipeline:
         logging.info(f"Retrieved {len(all_docs)} documents for trip ID: {user_trip_id}")
         return all_docs
 
-    def _rewrite_query(self, user_query: str, conversation_id: str) -> str:
+    def _rewrite_query(
+        self, user_query: str, conversation_id: str, max_history: int = 5
+    ) -> str:
         """
         Rewrites the user query based on the conversation history.
         :param user_query: The original user query.
@@ -67,8 +69,9 @@ class RetrievalPipeline:
         """
         memory_data = self.memory.get_history(conversation_id)
         if memory_data:
+            messages = [msg.model_dump() for msg in memory_data[-max_history:]]
             rendered_prompt = QueryRewriting.format(
-                conversation_history=memory_data[-5:],
+                conversation_history=messages[-max_history:],
                 followup_question=user_query,
             )
             RetrievalPipeline._log_token_usage(

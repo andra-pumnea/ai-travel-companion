@@ -32,7 +32,7 @@ class LLMManager:
         tools: Optional[list[dict]] = None,
         conversation_id: Optional[str] = None,
         max_tokens: int = 400,
-        max_history: int = 5
+        max_history: int = 5,
     ) -> str:
         """
         Calls the LLM with the provided user query and prompt.
@@ -44,12 +44,10 @@ class LLMManager:
         :return: The response from the LLM.
         """
 
-        messages = [
-            {"role": "system", "content": prompt}
-        ]
+        messages = [{"role": "system", "content": prompt}]
         if conversation_id:
             history = self.chat_history.get_history(conversation_id)
-            messages.extend(history[-max_history:])
+            messages.extend([msg.model_dump() for msg in history[-max_history:]])
         else:
             messages.append({"role": "user", "content": user_query})
 
