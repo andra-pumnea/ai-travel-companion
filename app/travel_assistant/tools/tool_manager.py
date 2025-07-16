@@ -1,3 +1,4 @@
+import inspect
 import logging
 
 
@@ -18,6 +19,17 @@ class ToolManager:
     def get_tool(self, tool_name):
         """Retrieve a registered tool by its name."""
         return self._tools.get(tool_name)
+
+    async def call_tool(self, tool_name: str, **kwargs) -> str:
+        """Calls tool if they exist"""
+        tool = self.get_tool(tool_name)
+        if not tool:
+            raise ValueError(f"Tool '{tool_name}' not found.")
+
+        if inspect.iscoroutinefunction(tool.run):
+            return await tool.run(**kwargs)
+        else:
+            return tool.run(**kwargs)
 
     @property
     def tool_descriptions(self):

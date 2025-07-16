@@ -1,5 +1,5 @@
-from app.planner_engine.planner_agent import PlannerAgent
-from app.prompts.travel_agent import PlanStepResponse
+from app.travel_assistant.planner_agent import PlannerAgent
+from app.prompts.planner_agent import PlannerAgentResponse
 
 
 class PlannerService:
@@ -7,8 +7,8 @@ class PlannerService:
         self.planner_agent = PlannerAgent()
 
     async def plan_trip(
-        self, user_query: str, user_id: str, trip_id: str, max_steps: int = 5
-    ) -> PlanStepResponse:
+        self, user_query: str, user_id: str, trip_id: str, max_steps: int = 3
+    ) -> PlannerAgentResponse:
         """
         Plans a trip based on the user's query and trip ID.
 

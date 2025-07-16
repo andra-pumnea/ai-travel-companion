@@ -1,4 +1,4 @@
-from app.planner_engine.tools.tool_base import ToolBase
+from app.travel_assistant.tools.tool_base import ToolBase
 
 
 class WeatherTool(ToolBase):
@@ -12,14 +12,20 @@ class WeatherTool(ToolBase):
         description: str = "Get current weather information for a specified location.",
     ):
         super().__init__(name, description)
+        self.required_keys = ["location"]
 
-    def run(self, location: str) -> str:
+    def run(self, **kwargs) -> str:
         """
         Fetches the current weather for the specified location.
         :param location: The location to get the weather for.
         :return: A string containing the current weather information.
         """
-        # Placeholder for actual weather fetching logic
+        inputs = self._validate_required_inputs(kwargs)
+        location = inputs["location"]
+
+        if not location:
+            raise ValueError("Missing required input: location")
+        # TODO: actual weather fetching logic
         return f"The current weather in {location} is sunny with a temperature of 25°C."
 
     @property

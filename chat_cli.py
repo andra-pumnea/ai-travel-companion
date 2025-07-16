@@ -1,7 +1,7 @@
 import sys
 import uuid
 import logging
-import requests # type: ignore
+import requests  # type: ignore
 
 from app.rag_engine.indexing_pipeline import IndexingPipeline
 from app.data.io.data_loader import (
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             response = requests.post(f"{BASE_URL}/chat/reply", json=payload)
             if response.status_code == 200:
                 data = response.json()
-                print("Bot:", data.get("answer", "(no reply)"))
+                print("Bot: ", data.get("answer", "(no reply)"))
             else:
                 print(f"Error: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:

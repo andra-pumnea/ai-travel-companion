@@ -26,7 +26,7 @@ class TravelPlan(BaseModel):
     )
 
 
-class PlanStepResponse(BaseModel):
+class PlannerAgentResponse(BaseModel):
     thought_process: str = Field(
         description="List of thoughts used for reasoning that the AI travel assistant had while planning the trip."
     )
@@ -34,7 +34,7 @@ class PlanStepResponse(BaseModel):
         None,
         description="The name of the tool to invoke next. Omit if this is the final travel plan.",
     )
-    tool_input: Optional[str] = Field(
+    tool_input: Optional[dict[str, str]] = Field(
         None,
         description="The input to provide to the tool specified in `tool`. Omit if this is the final travel plan.",
     )
@@ -55,7 +55,7 @@ class PlanStepResponse(BaseModel):
 class TravelAgentPrompt(PromptBase):
     """Class to handle travel agent prompts."""
 
-    prompt_name = "travel_agent"
+    prompt_name = "planner_agent"
 
     @classmethod
     def format(cls, **kwargs) -> str:
@@ -81,4 +81,4 @@ class TravelAgentPrompt(PromptBase):
         Returns the Pydantic model class expected for the LLM response.
         :return: The Pydantic model class for the response.
         """
-        return PlanStepResponse
+        return PlannerAgentResponse
